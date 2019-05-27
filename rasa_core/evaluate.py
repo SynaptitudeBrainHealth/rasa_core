@@ -565,6 +565,8 @@ def plot_story_evaluation(test_y, predictions,
     """Plot the results of story evaluation"""
     from sklearn.metrics import confusion_matrix
     from sklearn.utils.multiclass import unique_labels
+    import matplotlib
+    matplotlib.use('TkAgg')
     import matplotlib.pyplot as plt
 
     log_evaluation_table(test_y, "ACTION",
