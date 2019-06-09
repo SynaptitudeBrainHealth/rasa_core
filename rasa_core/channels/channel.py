@@ -388,9 +388,8 @@ class RestInput(InputChannel):
                 collector = CollectingOutputChannel()
                 # noinspection PyBroadException
                 try:
-                    loop = asyncio.get_event_loop()
-                    loop.create_task(on_new_message(UserMessage(text, collector, sender_id,
-                                                     input_channel=self.name())))
+                    await on_new_message(UserMessage(text, collector, sender_id,
+                                                     input_channel=self.name()))
                 except CancelledError:
                     logger.error("Message handling timed out for "
                                  "user message '{}'.".format(text))
