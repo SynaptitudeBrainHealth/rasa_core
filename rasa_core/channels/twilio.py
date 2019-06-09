@@ -92,8 +92,9 @@ class TwilioInput(InputChannel):
                 try:
                     # @ signs get corrupted in SMSes by some carriers
                     text = text.replace('¡', '@')
-                    await on_new_message(UserMessage(text, out_channel, sender,
-                                                     input_channel=self.name()))
+                    loop = asyncio.get_event_loop()
+                    loop.create_task(on_new_message(UserMessage(text, out_channel, sender,
+                                                     input_channel=self.name())))
                 except Exception as e:
                     logger.error("Exception when trying to handle "
                                  "message.{0}".format(e))
