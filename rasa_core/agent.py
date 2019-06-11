@@ -598,7 +598,7 @@ class Agent(object):
         app.agent = self
 
         app.run(host='0.0.0.0', port=http_port,
-                access_log=logger.isEnabledFor(logging.DEBUG))
+                access_log=logger.isEnabledFor(logging.DEBUG), workers=2)
 
         # this might seem unnecessary (as run does not return until the server
         # is killed) - but we use it for tests where we mock `.run` to directly
