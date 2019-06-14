@@ -22,7 +22,6 @@ from raven.contrib.flask import Sentry
 from raven.conf import setup_logging
 from flask.json import jsonify
 # Local imports
-from config import *
 
 sentry = Sentry(dsn="https://d0d37fc0964e41b699ac5fe456218ae0:f8bd8517dfb54e5bb124f1a99fc682f4@sentry.io/1318460",logging=True)
 client = Client(dsn="https://d0d37fc0964e41b699ac5fe456218ae0:f8bd8517dfb54e5bb124f1a99fc682f4@sentry.io/1318460")
@@ -32,6 +31,8 @@ setup_logging(handler)
 
 logger = logging.getLogger(__name__)
 
+SLACK = False
+TWILIO = True
 class BackendInput(InputChannel):
     """A custom http input channel for accepting requests from the 
     backend and sending the response back to our primary channel 
