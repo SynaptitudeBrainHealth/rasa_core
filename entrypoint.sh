@@ -13,7 +13,9 @@ function print_help {
 
 case ${1} in
     start)
-        exec python -m rasa_core.run --enable_api "${@:2}"
+	echo "python --version"
+	exec python -m rasa_core.run --enable_api "${@:2}"
+	
         ;;
     run)
         exec "${@:2}"
