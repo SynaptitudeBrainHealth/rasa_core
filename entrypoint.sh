@@ -13,7 +13,7 @@ function print_help {
 
 case ${1} in
     start)
-	echo "python --version"
+	echo `python --version`
 	exec python -m rasa_core.run --enable_api "${@:2}"
 	
         ;;
