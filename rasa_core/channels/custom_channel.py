@@ -21,6 +21,7 @@ from raven import Client
 from raven.contrib.flask import Sentry
 from raven.conf import setup_logging
 from flask.json import jsonify
+import datetime
 # Local imports
 
 sentry = Sentry(dsn="https://d0d37fc0964e41b699ac5fe456218ae0:f8bd8517dfb54e5bb124f1a99fc682f4@sentry.io/1318460",logging=True)
@@ -115,10 +116,12 @@ class BackendInput(InputChannel):
 
         @custom_webhook.route("/webhook", methods=['POST'])
         async def receive(request):
+            logger.info("Hit request endpoint")
+            utc_dt=datetime.datetime.utcnow()
+            logger.info(utc_dt)
+            print(utc_dt)
             from rasa_core.channels.slack import SlackBot
             from rasa_core.channels.twilio import TwilioOutput
-            app = request.app
-            app.add_task
             sender_id = await self._extract_sender(request)
             text = self._extract_message(request)
             should_use_stream = utils.bool_arg(request, "stream", default=False)
@@ -138,6 +141,10 @@ class BackendInput(InputChannel):
 
                 try:
                     app = request.app
+                    logger.info("Adding task")
+                    utc_dt=datetime.datetime.utcnow()
+                    logger.info(utc_dt)
+                    print(utc_dt)
                     app.add_task(on_new_message(UserMessage(text, out_channel, sender_id,
                                                input_channel=self.name())))
                     # loop = asyncio.get_event_loop()
@@ -147,7 +154,11 @@ class BackendInput(InputChannel):
                     logger.error("Exception when trying to handle "
                                  "message.{0}".format(e))
                     logger.debug(e, exc_info=True)
-
+                logger.info("Returning response text")
+                print("Returning response text")
+                utc_dt=datetime.datetime.utcnow()
+                logger.info(utc_dt)
+                print(utc_dt)    
                 return response.text("success")
 
         return custom_webhook
