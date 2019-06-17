@@ -296,7 +296,11 @@ class MessageProcessor(object):
                self._should_handle_message(tracker) and
                num_predicted_actions < self.max_number_of_predictions):
             # this actually just calls the policy's method by the same name
-            action, policy, confidence = self.predict_next_action(tracker)
+            import asyncio
+            import concurrent
+            loop = asyncio.get_event_loop()
+            executor = concurrent.futures.ThreadPoolExecutor()
+            action, policy, confidence = await loop.run_in_executor(executor, self.predict_next_action, tracker)
 
             should_predict_another_action = await self._run_action(action,
                                                                    tracker,
