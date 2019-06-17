@@ -142,7 +142,7 @@ class MessageProcessor(object):
                            "'{}'.".format(sender_id))
         return tracker
 
-    def predict_next_action(self,
+    async def predict_next_action(self,
                             tracker: DialogueStateTracker
                             ) -> Tuple[Action, Text, float]:
         """Predicts the next action the bot should take after seeing x.
