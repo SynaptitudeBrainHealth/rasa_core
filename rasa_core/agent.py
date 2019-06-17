@@ -314,10 +314,8 @@ class Agent(object):
         """Handle a single message."""
         import datetime
         logger.info("Handling message")
-        print("Handling message")
         utc_dt = datetime.datetime.utcnow()
         logger.info(utc_dt)
-        print(utc_dt)
         
         if not isinstance(message, UserMessage):
             logger.warning("Passing a text to `agent.handle_message(...)` is "

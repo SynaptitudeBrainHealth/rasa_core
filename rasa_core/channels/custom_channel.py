@@ -144,7 +144,6 @@ class BackendInput(InputChannel):
                     logger.info("Adding task")
                     utc_dt=datetime.datetime.utcnow()
                     logger.info(utc_dt)
-                    print(utc_dt)
                     app.add_task(on_new_message(UserMessage(text, out_channel, sender_id,
                                                input_channel=self.name())))
                     # loop = asyncio.get_event_loop()
@@ -155,10 +154,8 @@ class BackendInput(InputChannel):
                                  "message.{0}".format(e))
                     logger.debug(e, exc_info=True)
                 logger.info("Returning response text")
-                print("Returning response text")
                 utc_dt=datetime.datetime.utcnow()
-                logger.info(utc_dt)
-                print(utc_dt)    
+                logger.info(utc_dt) 
                 return response.text("success")
 
         return custom_webhook
