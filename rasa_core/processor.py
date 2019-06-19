@@ -372,8 +372,8 @@ class MessageProcessor(object):
         self._log_action_on_tracker(tracker, action.name(), events, policy,
                                     confidence)
         self.log_bot_utterances_on_tracker(tracker, dispatcher)
-        self._schedule_reminders(events, dispatcher, tracker)
         self._cancel_reminders(events, tracker)
+        self._schedule_reminders(events, dispatcher, tracker)
 
         return self.should_predict_another_action(action.name(), events)
 
