@@ -158,7 +158,7 @@ def serve_application(core_model=None,
         partial(load_agent_on_start, core_model, endpoints, nlu_model),
         'before_server_start')
     app.run(host='0.0.0.0', port=port,
-            access_log=logger.isEnabledFor(logging.DEBUG))
+            access_log=logger.isEnabledFor(logging.DEBUG), debug=True)
 
 
 # noinspection PyUnusedLocal
