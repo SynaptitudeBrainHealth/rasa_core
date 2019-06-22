@@ -192,6 +192,7 @@ class MessageProcessor(object):
                               ) -> None:
         """Handle a reminder that is triggered asynchronously."""
 
+        logger.info("In handle reminder function")
         tracker = self._get_tracker(dispatcher.sender_id)
 
         if not tracker:
