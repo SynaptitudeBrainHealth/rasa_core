@@ -371,10 +371,12 @@ class RestInput(InputChannel):
         # noinspection PyUnusedLocal
         @custom_webhook.route("/", methods=['GET'])
         async def health(request):
+            logger.info("in health rest channel")
             return response.json({"status": "ok"})
 
         @custom_webhook.route("/webhook", methods=['POST'])
         async def receive(request):
+            logger.info("in receive rest channel")
             sender_id = await self._extract_sender(request)
             text = self._extract_message(request)
             should_use_stream = utils.bool_arg(request, "stream",

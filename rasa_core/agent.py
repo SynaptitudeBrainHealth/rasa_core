@@ -313,7 +313,7 @@ class Agent(object):
     ) -> Optional[List[Text]]:
         """Handle a single message."""
         import datetime
-        logger.info("Handling message")
+        logger.info("Handling message in agent.py")
         utc_dt = datetime.datetime.utcnow()
         logger.info(utc_dt)
         
@@ -433,6 +433,7 @@ class Agent(object):
 
         """
 
+        logger.info("in handle_text in agent.py")
         if isinstance(text_message, str):
             text_message = {"text": text_message}
 

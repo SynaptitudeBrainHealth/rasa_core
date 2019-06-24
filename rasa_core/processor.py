@@ -64,6 +64,7 @@ class MessageProcessor(object):
         """Handle a single message with this processor."""
 
         # preprocess message if necessary
+        logger.info("in handle_message in processor.py")
         tracker = await self.log_message(message)
         if not tracker:
             return None
@@ -150,6 +151,7 @@ class MessageProcessor(object):
         This should be overwritten by more advanced policies to use
         ML to predict the action. Returns the index of the next action."""
 
+        logger.info("in predict_next_action in processor.py")
         probabilities, policy = self._get_next_action_probabilities(tracker)
 
         max_index = int(np.argmax(probabilities))
@@ -278,6 +280,7 @@ class MessageProcessor(object):
 
     async def _predict_and_execute_next_action(self, message, tracker):
         # keep taking actions decided by the policy until it chooses to 'listen'
+        logger.info("in _predict_and_execute_next_action in processor.py")
         should_predict_another_action = True
         num_predicted_actions = 0
 
@@ -368,6 +371,7 @@ class MessageProcessor(object):
                           confidence=None):
         # events and return values are used to update
         # the tracker state after an action has been taken
+        logger.info("in _run_action in processor.py")
         try:
             events = await action.run(dispatcher, tracker, self.domain)
         except ActionExecutionRejection:
