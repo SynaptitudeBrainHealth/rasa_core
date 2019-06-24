@@ -325,7 +325,7 @@ class MessageProcessor(object):
         is_listen_action = action_name == ACTION_LISTEN_NAME
         return not is_listen_action
 
-    def _schedule_reminders(self, events: List[Event],
+    async def _schedule_reminders(self, events: List[Event],
                                   dispatcher: Dispatcher, tracker) -> None:
         """Uses the scheduler to time a job to trigger the passed reminder.
 
@@ -338,7 +338,8 @@ class MessageProcessor(object):
 
                     logger.info("In schedule reminder....")
 
-                    (jobs.scheduler()).add_job(
+                    sched = await jobs.scheduler()
+                    sched.add_job(
                         self.handle_reminder, "date",
                         run_date=e.trigger_date_time,
                         args=[e, dispatcher],
@@ -388,7 +389,7 @@ class MessageProcessor(object):
         self.log_bot_utterances_on_tracker(tracker, dispatcher)
 
         await self._cancel_reminders(events, tracker)
-        self._schedule_reminders(events, dispatcher, tracker)
+        await self._schedule_reminders(events, dispatcher, tracker)
 
         return self.should_predict_another_action(action.name(), events)
 
