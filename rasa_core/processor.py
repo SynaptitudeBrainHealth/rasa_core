@@ -302,7 +302,7 @@ class MessageProcessor(object):
             # loop = asyncio.get_event_loop()
             # executor = concurrent.futures.ThreadPoolExecutor()
             # action, policy, confidence = await loop.run_in_executor(executor, self.predict_next_action, tracker)
-            self.predict_next_action(tracker)
+            action, policy, confidence = self.predict_next_action(tracker)
 
             should_predict_another_action = await self._run_action(action,
                                                                    tracker,
