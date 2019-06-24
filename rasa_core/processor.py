@@ -336,6 +336,8 @@ class MessageProcessor(object):
             for e in events:
                 if isinstance(e, ReminderScheduled):
 
+                    logger.info("In schedule reminder....")
+
                     (await jobs.scheduler()).add_job(
                         self.handle_reminder, "date",
                         run_date=e.trigger_date_time,
