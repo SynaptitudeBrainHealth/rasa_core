@@ -349,8 +349,7 @@ class MessageProcessor(object):
                             str(e.action_name)
                             + "__sender_id:"
                             + tracker.sender_id
-                            ),
-                        misfire_grace_time=None
+                            )
                         )
 
     async def _cancel_reminders(self, events: List[Event], tracker) -> None:
