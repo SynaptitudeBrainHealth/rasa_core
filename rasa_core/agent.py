@@ -335,31 +335,32 @@ class Agent(object):
 
         processor = self.create_processor(message_preprocessor)
 
+        return await processor.handle_message(message)
         # get the lock for the current conversation
-        lock = self.conversations_in_processing.get(message.sender_id)
-        if not lock:
-            logger.debug("created a new lock for conversation '{}'"
-                         "".format(message.sender_id))
-            lock = LockCounter()
-            self.conversations_in_processing[message.sender_id] = lock
+        # lock = self.conversations_in_processing.get(message.sender_id)
+        # if not lock:
+        #     logger.debug("created a new lock for conversation '{}'"
+        #                  "".format(message.sender_id))
+        #     lock = LockCounter()
+        #     self.conversations_in_processing[message.sender_id] = lock
 
-        try:
-            async with lock:
-                # this makes sure that there can always only be one coroutine
-                # handling a conversation at any point in time
-                # Note: this doesn't support multi-processing, it just works
-                # for coroutines. If there are multiple processes handling
-                # messages, an external system needs to make sure messages
-                # for the same conversation are always processed by the same
-                # process.
-                return await processor.handle_message(message)
-        finally:
-            if not lock.is_someone_waiting():
-                # dispose of the lock if no one needs it to avoid
-                # accumulating locks
-                del self.conversations_in_processing[message.sender_id]
-                logger.debug("deleted lock for conversation '{}' (unused)"
-                             "".format(message.sender_id))
+        # try:
+        #     async with lock:
+        #         # this makes sure that there can always only be one coroutine
+        #         # handling a conversation at any point in time
+        #         # Note: this doesn't support multi-processing, it just works
+        #         # for coroutines. If there are multiple processes handling
+        #         # messages, an external system needs to make sure messages
+        #         # for the same conversation are always processed by the same
+        #         # process.
+        #         return await processor.handle_message(message)
+        # finally:
+        #     if not lock.is_someone_waiting():
+        #         # dispose of the lock if no one needs it to avoid
+        #         # accumulating locks
+        #         del self.conversations_in_processing[message.sender_id]
+        #         logger.debug("deleted lock for conversation '{}' (unused)"
+        #                      "".format(message.sender_id))
 
     # noinspection PyUnusedLocal
     def predict_next(
