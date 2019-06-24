@@ -299,9 +299,10 @@ class MessageProcessor(object):
             # this actually just calls the policy's method by the same name
             import asyncio
             import concurrent
-            loop = asyncio.get_event_loop()
-            executor = concurrent.futures.ThreadPoolExecutor()
-            action, policy, confidence = await loop.run_in_executor(executor, self.predict_next_action, tracker)
+            # loop = asyncio.get_event_loop()
+            # executor = concurrent.futures.ThreadPoolExecutor()
+            # action, policy, confidence = await loop.run_in_executor(executor, self.predict_next_action, tracker)
+            self.predict_next_action(tracker)
 
             should_predict_another_action = await self._run_action(action,
                                                                    tracker,
