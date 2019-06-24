@@ -299,10 +299,9 @@ class MessageProcessor(object):
             # this actually just calls the policy's method by the same name
             import asyncio
             import concurrent
-            # loop = asyncio.get_event_loop()
-            # executor = concurrent.futures.ThreadPoolExecutor()
-            # action, policy, confidence = await loop.run_in_executor(executor, self.predict_next_action, tracker)
-            action, policy, confidence = self.predict_next_action(tracker)
+            loop = asyncio.get_event_loop()
+            executor = concurrent.futures.ThreadPoolExecutor()
+            action, policy, confidence = await loop.run_in_executor(executor, self.predict_next_action, tracker)
 
             should_predict_another_action = await self._run_action(action,
                                                                    tracker,
@@ -326,7 +325,7 @@ class MessageProcessor(object):
         is_listen_action = action_name == ACTION_LISTEN_NAME
         return not is_listen_action
 
-    async def _schedule_reminders(self, events: List[Event],
+    def _schedule_reminders(self, events: List[Event],
                                   dispatcher: Dispatcher, tracker) -> None:
         """Uses the scheduler to time a job to trigger the passed reminder.
 
@@ -339,7 +338,7 @@ class MessageProcessor(object):
 
                     logger.info("In schedule reminder....")
 
-                    (await jobs.scheduler()).add_job(
+                    (jobs.scheduler()).add_job(
                         self.handle_reminder, "date",
                         run_date=e.trigger_date_time,
                         args=[e, dispatcher],
@@ -389,7 +388,7 @@ class MessageProcessor(object):
         self.log_bot_utterances_on_tracker(tracker, dispatcher)
 
         await self._cancel_reminders(events, tracker)
-        await self._schedule_reminders(events, dispatcher, tracker)
+        self._schedule_reminders(events, dispatcher, tracker)
 
         return self.should_predict_another_action(action.name(), events)
 
