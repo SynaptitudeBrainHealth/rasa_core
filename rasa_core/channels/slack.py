@@ -193,8 +193,8 @@ class SlackInput(InputChannel):
         """
         retry_reason = request.headers.get('HTTP_X_SLACK_RETRY_REASON')
         retry_count = request.headers.get('HTTP_X_SLACK_RETRY_NUM')
-        logger.info("retry_reason", retry_reason)
-        logger.info("retry_count", retry_count)
+        logger.info("retry_reason : {}".format(retry_reason))
+        logger.info("retry_count: {}".format(retry_count))
         if retry_count and retry_reason in self.errors_ignore_retry:
             logger.warning("Received retry #{} request from slack"
                            " due to {}".format(retry_count, retry_reason))
@@ -204,17 +204,18 @@ class SlackInput(InputChannel):
                                  headers={'X-Slack-No-Retry': 1})
 
         try:
+            app = request.app
             out_channel = SlackBot(self.slack_token, self.slack_channel)
             user_msg = UserMessage(text, out_channel, sender_id,
                                    input_channel=self.name())
 
-            await on_new_message(user_msg)
+            app.add_task(on_new_message(user_msg))
         except Exception as e:
             logger.error("Exception when trying to handle "
                          "message.{0}".format(e))
             logger.error(str(e), exc_info=True)
 
-        return response.text("")
+        return response.text("success")
 
     def blueprint(self, on_new_message):
         slack_webhook = Blueprint('slack_webhook', __name__)
@@ -240,15 +241,14 @@ class SlackInput(InputChannel):
                     return response.json(output.get("challenge"))
 
                 elif self._is_user_message(output):
-                    app = request.app
-                    return app.add_task(self.process_message(
+                    return await self.process_message(
                         request,
                         on_new_message,
                         text=self._sanitize_user_message(
                             output['event']['text'],
                             output['authed_users']),
-                        sender_id=output.get('event').get('user')))
+                        sender_id=output.get('event').get('user'))
 
-            return response.text("success")
+            return response.text("")
 
         return slack_webhook
