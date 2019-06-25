@@ -193,6 +193,8 @@ class SlackInput(InputChannel):
         """
         retry_reason = request.headers.get('HTTP_X_SLACK_RETRY_REASON')
         retry_count = request.headers.get('HTTP_X_SLACK_RETRY_NUM')
+        logger.info("retry_reason", retry_reason)
+        logger.info("retry_count", retry_count)
         if retry_count and retry_reason in self.errors_ignore_retry:
             logger.warning("Received retry #{} request from slack"
                            " due to {}".format(retry_count, retry_reason))
@@ -247,6 +249,6 @@ class SlackInput(InputChannel):
                             output['authed_users']),
                         sender_id=output.get('event').get('user')))
 
-            return response.text("")
+            return response.text("success")
 
         return slack_webhook
