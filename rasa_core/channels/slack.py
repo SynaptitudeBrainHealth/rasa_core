@@ -238,13 +238,14 @@ class SlackInput(InputChannel):
                     return response.json(output.get("challenge"))
 
                 elif self._is_user_message(output):
-                    return await self.process_message(
+                    app = request.app
+                    return app.add_task(self.process_message(
                         request,
                         on_new_message,
                         text=self._sanitize_user_message(
                             output['event']['text'],
                             output['authed_users']),
-                        sender_id=output.get('event').get('user'))
+                        sender_id=output.get('event').get('user')))
 
             return response.text("")
 
