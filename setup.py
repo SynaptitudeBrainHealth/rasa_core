@@ -78,7 +78,8 @@ install_requires = [
     "sqlalchemy~=1.2",
     "kafka-python~=1.4",
     "sklearn-crfsuite~=0.3.6",
-    "raven==6.10.0"
+    "raven==6.10.0",
+    "blinker==1.4"
 ]
 
 extras_requires = {
