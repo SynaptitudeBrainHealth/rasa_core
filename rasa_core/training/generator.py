@@ -369,6 +369,7 @@ class TrainingDataGenerator(object):
         logger.debug("Found {} training trackers."
                      "".format(len(finished_trackers)))
 
+        '''
         if self.config.augmentation_factor > 0:
             augmented_trackers, original_trackers = [], []
             for t in finished_trackers:
@@ -384,7 +385,8 @@ class TrainingDataGenerator(object):
             logger.debug("There are {} original trackers."
                          "".format(len(original_trackers)))
             finished_trackers = original_trackers + augmented_trackers
-
+        '''
+        
         return finished_trackers
 
     @staticmethod
