@@ -84,8 +84,8 @@ class TwilioInput(InputChannel):
 
         @twilio_webhook.route("/webhook", methods=['POST'])
         async def message(request):
-            sender = request.values.get('From', None)
-            text = request.values.get('Body', None)
+            sender = request.form.get('From', None)
+            text = request.form.get('Body', None)
 
             out_channel = TwilioOutput(self.account_sid, self.auth_token,
                                        self.twilio_number)
