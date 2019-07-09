@@ -369,8 +369,8 @@ class TrainingDataGenerator(object):
         logger.debug("Found {} training trackers."
                      "".format(len(finished_trackers)))
 
-        disable_subsampling = True
-        if disable_subsampling:
+        enable_subsampling = False
+        if enable_subsampling:
             '''
             Synaptitude Note : Subsampling somehow seems to affect our
             training so we are disabling it for now
