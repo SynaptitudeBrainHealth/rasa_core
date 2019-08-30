@@ -578,7 +578,7 @@ class ReminderCancelled(Event):
         Args:
             name: name of the scheduled action to be cancelled
         """
-
+        logger.info("cancel reminder event")
         self.name = name
 
     def __hash__(self):
