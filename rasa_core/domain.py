@@ -310,7 +310,8 @@ class Domain(object):
 
         try:
             return self.action_names.index(action_name)
-            logger.info('action name; {}'.format(action_name))
+            logger.info("in domain......")
+            logger.info("action name {}".format(action_name))
         except ValueError:
             self._raise_action_not_found_exception(action_name)
 
