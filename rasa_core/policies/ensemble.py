@@ -343,6 +343,8 @@ class SimplePolicyEnsemble(PolicyEnsemble):
                     tracker.events[-1].action_name)] = 0.0
             confidence = np.max(probabilities)
 
+            logger.info("confidence : {}".format(confidence))
+
             if (confidence, p.priority) > (max_confidence,
                                            best_policy_priority):
                 max_confidence = confidence
