@@ -338,6 +338,7 @@ class SimplePolicyEnsemble(PolicyEnsemble):
         for i, p in enumerate(self.policies):
             probabilities = p.predict_action_probabilities(tracker, domain)
 
+            logger.info("probabilities: {}".format(probabilities))
             if isinstance(tracker.events[-1], ActionExecutionRejected):
                 probabilities[domain.index_for_action(
                     tracker.events[-1].action_name)] = 0.0
