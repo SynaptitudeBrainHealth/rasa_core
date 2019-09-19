@@ -259,8 +259,8 @@ def create_app(agent=None,
 
         try:
             tracker = app.agent.tracker_store.get_or_create_tracker(sender_id)
-            # output_channel = _get_output_channel(request, tracker)
-            output_channel = request.args.get(OUTPUT_CHANNEL_QUERY_KEY)
+            output_channel = _get_output_channel(request, tracker)
+            # output_channel = request.args.get(OUTPUT_CHANNEL_QUERY_KEY)
             await app.agent.execute_action(sender_id,
                                            action_to_execute,
                                            output_channel,
