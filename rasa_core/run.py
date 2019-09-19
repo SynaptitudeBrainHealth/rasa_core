@@ -152,6 +152,7 @@ def serve_application(core_model=None,
     app = configure_app(input_channels, cors, auth_token, enable_api,
                         jwt_secret, jwt_method, port=port)
 
+    app.config['input_channels'] = input_channels
     logger.info("Starting Rasa Core server on "
                 "{}".format(constants.DEFAULT_SERVER_FORMAT.format(port)))
 
