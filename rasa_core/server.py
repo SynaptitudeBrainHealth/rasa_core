@@ -258,6 +258,7 @@ def create_app(agent=None,
                                               EventVerbosity.AFTER_RESTART)
 
         try:
+            tracker = app.agent.tracker_store.get_or_create_tracker(sender_id)
             output_channel = _get_output_channel(request, tracker)
             await app.agent.execute_action(sender_id,
                                            action_to_execute,
@@ -266,7 +267,6 @@ def create_app(agent=None,
                                            confidence)
 
             # retrieve tracker and set to requested state
-            tracker = app.agent.tracker_store.get_or_create_tracker(sender_id)
             state = tracker.current_state(verbosity)
             return response.json({"tracker": state,
                                   "messages": out.messages})
