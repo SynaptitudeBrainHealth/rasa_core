@@ -713,6 +713,8 @@ def _get_output_channel(
     """
     requested_output_channel = request.args.get(OUTPUT_CHANNEL_QUERY_KEY)
 
+    logger.info('requested_output_channel: {}'.format(requested_output_channel))
+
     if (
         requested_output_channel == USE_LATEST_INPUT_CHANNEL_AS_OUTPUT_CHANNEL
         and tracker
@@ -726,6 +728,8 @@ def _get_output_channel(
         for channel in registered_input_channels
         if channel.name() == requested_output_channel
     ]
+
+    logger.info('matching_channels: {}'.format(matching_channels))
 
     # Check if matching channels can provide a valid output channel,
     # otherwise use `CollectingOutputChannel`
