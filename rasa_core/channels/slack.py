@@ -253,5 +253,5 @@ class SlackInput(InputChannel):
 
         return slack_webhook
 
-    def get_output_channel(self) -> OutputChannel:
+    def get_output_channel(self):
         return SlackBot(self.slack_token, self.slack_channel)
