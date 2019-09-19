@@ -22,7 +22,7 @@ from rasa_core.test import test
 from rasa_core.trackers import DialogueStateTracker, EventVerbosity
 from rasa_core.utils import dump_obj_as_str_to_file
 
-from rasa.core.channels.channel import (
+from rasa_core.channels.channel import (
     UserMessage,
     CollectingOutputChannel,
     OutputChannel,
