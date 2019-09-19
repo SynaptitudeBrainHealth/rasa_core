@@ -22,6 +22,12 @@ from rasa_core.test import test
 from rasa_core.trackers import DialogueStateTracker, EventVerbosity
 from rasa_core.utils import dump_obj_as_str_to_file
 
+from rasa.core.channels.channel import (
+    UserMessage,
+    CollectingOutputChannel,
+    OutputChannel,
+)
+
 logger = logging.getLogger(__name__)
 
 OUTPUT_CHANNEL_QUERY_KEY = "output_channel"
