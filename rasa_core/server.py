@@ -269,7 +269,7 @@ def create_app(agent=None,
             # retrieve tracker and set to requested state
             state = tracker.current_state(verbosity)
             return response.json({"tracker": state,
-                                  "messages": out.messages})
+                                  "messages": output_channel.messages})
 
         except ValueError as e:
             raise ErrorResponse(400, "ValueError", e)
