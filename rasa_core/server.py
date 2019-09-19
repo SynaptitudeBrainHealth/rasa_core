@@ -14,13 +14,14 @@ from sanic_jwt import Initialize, exceptions
 
 import rasa
 from rasa_core import constants, utils
-from rasa_core.channels import CollectingOutputChannel, UserMessage
+from rasa_core.channels import CollectingOutputChannel, UserMessage, RestInput
 from rasa_core.domain import Domain
 from rasa_core.events import Event
 from rasa_core.policies import PolicyEnsemble
 from rasa_core.test import test
 from rasa_core.trackers import DialogueStateTracker, EventVerbosity
 from rasa_core.utils import dump_obj_as_str_to_file
+from rasa_core.channels.slack import SlackInput
 
 from rasa_core.channels.channel import (
     UserMessage,
@@ -722,7 +723,8 @@ def _get_output_channel(
         requested_output_channel = tracker.get_latest_input_channel()
 
     # Interactive training does not set `input_channels`, hence we have to be cautious
-    registered_input_channels = getattr(request.app, "input_channels", None) or []
+    # registered_input_channels = getattr(request.app, "input_channels", None) or []
+    registered_input_channels = [RestInput, SlackInput]
     logger.info('registered_input_channels: {}'.format(registered_input_channels))
     matching_channels = [
         channel
