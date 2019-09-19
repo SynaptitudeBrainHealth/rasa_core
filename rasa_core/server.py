@@ -2,7 +2,7 @@ import logging
 import os
 import tempfile
 import zipfile
-from functools import wraps
+from functools import wraps, reduce
 from inspect import isawaitable
 from typing import Any, Callable, List, Optional, Text, Union
 
