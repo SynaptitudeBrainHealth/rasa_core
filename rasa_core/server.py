@@ -743,6 +743,7 @@ def _get_output_channel(
         matching_channels,
         CollectingOutputChannel(),
     )
+    # return matching_channels[0]
 
 
 if __name__ == '__main__':
