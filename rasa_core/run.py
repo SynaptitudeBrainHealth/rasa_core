@@ -99,6 +99,7 @@ def configure_app(input_channels=None,
              resources={r"/*": {"origins": cors or ""}},
              automatic_options=True)
 
+    logger.info('congifure app input_channels: {}'.format(input_channels))
     if input_channels:
         rasa_core.channels.channel.register(input_channels,
                                             app,

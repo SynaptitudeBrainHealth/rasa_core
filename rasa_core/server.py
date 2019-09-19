@@ -724,9 +724,9 @@ def _get_output_channel(
 
     # Interactive training does not set `input_channels`, hence we have to be cautious
 
-    # registered_input_channels = getattr(request.app, "input_channels", None) or []
+    registered_input_channels = getattr(request.app, "input_channels", None) or []
 
-    registered_input_channels = [RestInput(), SlackInput()]
+    # registered_input_channels = [RestInput, SlackInput()]
     logger.info('registered_input_channels: {}'.format(registered_input_channels))
     matching_channels = [
         channel
