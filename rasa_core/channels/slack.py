@@ -27,8 +27,10 @@ class SlackBot(SlackClient, OutputChannel):
         super(SlackBot, self).__init__(token)
 
     async def send_text_message(self, recipient_id, message):
+        logger.info("in slack recipient: {}".format(recipient_id))
         recipient = self.slack_channel or recipient_id
         for message_part in message.split("\n\n"):
+            logger.info("in slack message_part: {}".format(message_part))
             super(SlackBot, self).api_call("chat.postMessage",
                                            channel=recipient,
                                            as_user=True, text=message_part)
