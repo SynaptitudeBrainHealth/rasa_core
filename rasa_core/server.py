@@ -274,9 +274,10 @@ def create_app(agent=None,
             state = tracker.current_state(verbosity)
             # return response.json({"tracker": state,
             #                       "messages": output_channel.messages})
-            await output_channel.send_text_message(sender_id, out.messages[0]['text'])
+            # await output_channel.send_text_message(sender_id, out.messages[0]['text'])
 
-            return response.json({"tracker": state})
+            # return response.json({"tracker": state})
+            return await output_channel.send_text_message(sender_id, out.messages[0]['text'])
 
         except ValueError as e:
             raise ErrorResponse(400, "ValueError", e)
