@@ -113,3 +113,6 @@ class TwilioInput(InputChannel):
             return response.text("")
 
         return twilio_webhook
+
+    def get_output_channel(self) -> OutputChannel:
+        return TwilioOutput(self.account_sid, self.auth_token, self.twilio_number)
