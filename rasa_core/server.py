@@ -274,7 +274,7 @@ def create_app(agent=None,
             state = tracker.current_state(verbosity)
             # return response.json({"tracker": state,
             #                       "messages": output_channel.messages})
-            output_channel.send_text_message(sender_id, out.messages[0]['text'])
+            await output_channel.send_text_message(sender_id, out.messages[0]['text'])
 
             return response.json({"tracker": state})
 
