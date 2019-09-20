@@ -262,17 +262,21 @@ def create_app(agent=None,
             tracker = app.agent.tracker_store.get_or_create_tracker(sender_id)
             output_channel = _get_output_channel(request, tracker)
             logger.info('output_channel: {}'.format(output_channel))
+            out = CollectingOutputChannel()
             # output_channel = request.args.get(OUTPUT_CHANNEL_QUERY_KEY)
             await app.agent.execute_action(sender_id,
                                            action_to_execute,
-                                           output_channel,
+                                           out,
                                            policy,
                                            confidence)
 
             # retrieve tracker and set to requested state
             state = tracker.current_state(verbosity)
-            return response.json({"tracker": state,
-                                  "messages": output_channel.messages})
+            # return response.json({"tracker": state,
+            #                       "messages": output_channel.messages})
+            output_channel.send_text_message(sender_id, out.messages[0]['text'])
+
+            return response.json({"tracker": state})
 
         except ValueError as e:
             raise ErrorResponse(400, "ValueError", e)
