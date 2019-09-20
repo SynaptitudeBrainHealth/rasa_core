@@ -2,7 +2,7 @@ import logging
 import os
 import tempfile
 import zipfile
-from functools import wraps
+from functools import wraps, reduce
 from inspect import isawaitable
 from typing import Any, Callable, List, Optional, Text, Union
 
@@ -14,7 +14,7 @@ from sanic_jwt import Initialize, exceptions
 
 import rasa
 from rasa_core import constants, utils
-from rasa_core.channels import CollectingOutputChannel, UserMessage
+from rasa_core.channels import CollectingOutputChannel, UserMessage, OutputChannel
 from rasa_core.domain import Domain
 from rasa_core.events import Event
 from rasa_core.policies import PolicyEnsemble
@@ -24,6 +24,8 @@ from rasa_core.utils import dump_obj_as_str_to_file
 
 logger = logging.getLogger(__name__)
 
+OUTPUT_CHANNEL_QUERY_KEY = "output_channel"
+USE_LATEST_INPUT_CHANNEL_AS_OUTPUT_CHANNEL = "latest"
 
 class ErrorResponse(Exception):
     def __init__(self, status, reason, message, details=None, help_url=None):
@@ -249,18 +251,19 @@ def create_app(agent=None,
                                               EventVerbosity.AFTER_RESTART)
 
         try:
-            out = CollectingOutputChannel()
+            tracker = app.agent.tracker_store.get_or_create_tracker(sender_id)
+            output_channel = _get_output_channel(request, tracker)
+            logger.info('output_channel: {}'.format(output_channel))
             await app.agent.execute_action(sender_id,
                                            action_to_execute,
-                                           out,
+                                           output_channel,
                                            policy,
                                            confidence)
 
             # retrieve tracker and set to requested state
             tracker = app.agent.tracker_store.get_or_create_tracker(sender_id)
             state = tracker.current_state(verbosity)
-            return response.json({"tracker": state,
-                                  "messages": out.messages})
+            return response.json({"tracker": state})
 
         except ValueError as e:
             raise ErrorResponse(400, "ValueError", e)
@@ -689,6 +692,43 @@ def create_app(agent=None,
 
     return app
 
+def _get_output_channel(
+    request: Request, tracker: Optional[DialogueStateTracker]
+    ) -> OutputChannel:
+    """Returns the `OutputChannel` which should be used for the bot's responses.
+    Args:
+        request: HTTP request whose query parameters can specify which `OutputChannel`
+                 should be used.
+        tracker: Tracker for the conversation. Used to get the latest input channel.
+    Returns:
+        `OutputChannel` which should be used to return the bot's responses to.
+    """
+    requested_output_channel = request.args.get(OUTPUT_CHANNEL_QUERY_KEY)
+
+    if (
+        requested_output_channel == USE_LATEST_INPUT_CHANNEL_AS_OUTPUT_CHANNEL
+        and tracker
+    ):
+        requested_output_channel = tracker.get_latest_input_channel()
+
+    # Interactive training does not set `input_channels`, hence we have to be cautious
+    registered_input_channels = request.app.config.get("input_channels")
+
+    matching_channels = [
+        channel
+        for channel in registered_input_channels
+        if channel.name() == requested_output_channel
+    ]
+
+    # Check if matching channels can provide a valid output channel,
+    # otherwise use `CollectingOutputChannel`
+    return reduce(
+        lambda output_channel_created_so_far, input_channel: (
+            input_channel.get_output_channel() or output_channel_created_so_far
+        ),
+        matching_channels,
+        CollectingOutputChannel(),
+    )
 
 if __name__ == '__main__':
     raise RuntimeError("Calling `rasa_core.server` directly is "

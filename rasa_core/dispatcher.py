@@ -53,7 +53,6 @@ class Dispatcher(object):
                                  data={"elements": message.get("elements"),
                                        "buttons": message.get("buttons"),
                                        "attachment": message.get("image")})
-
         self.latest_bot_messages.append(bot_message)
         await self.output_channel.send_response(self.sender_id, message)
 
