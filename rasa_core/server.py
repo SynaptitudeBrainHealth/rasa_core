@@ -262,11 +262,11 @@ def create_app(agent=None,
             tracker = app.agent.tracker_store.get_or_create_tracker(sender_id)
             output_channel = _get_output_channel(request, tracker)
             logger.info('output_channel: {}'.format(output_channel))
-            out = CollectingOutputChannel()
+            # out = CollectingOutputChannel()
             # output_channel = request.args.get(OUTPUT_CHANNEL_QUERY_KEY)
             await app.agent.execute_action(sender_id,
                                            action_to_execute,
-                                           out,
+                                           output_channel,
                                            policy,
                                            confidence)
 
@@ -274,8 +274,8 @@ def create_app(agent=None,
             state = tracker.current_state(verbosity)
             # return response.json({"tracker": state,
             #                       "messages": output_channel.messages})
-            logger.info("out.messages[0]['text']: {}".format(out.messages[0]['text']))
-            await output_channel.send_text_message(sender_id, out.messages[0]['text'])
+            # logger.info("out.messages[0]['text']: {}".format(out.messages[0]['text']))
+            # await output_channel.send_text_message(sender_id, out.messages[0]['text'])
 
             logger.info("after await")
 
