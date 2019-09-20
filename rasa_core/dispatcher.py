@@ -54,6 +54,8 @@ class Dispatcher(object):
                                        "buttons": message.get("buttons"),
                                        "attachment": message.get("image")})
 
+        logger.info("in dispatcher utter response")
+        logger.info("output_channel: {}".format(self.output_channel))
         self.latest_bot_messages.append(bot_message)
         await self.output_channel.send_response(self.sender_id, message)
 
