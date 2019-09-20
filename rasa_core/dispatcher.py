@@ -56,6 +56,7 @@ class Dispatcher(object):
 
         logger.info("in dispatcher utter response")
         logger.info("output_channel: {}".format(self.output_channel))
+        logger.info("sender_id: {}".format(self.sender_id))
         self.latest_bot_messages.append(bot_message)
         await self.output_channel.send_response(self.sender_id, message)
 
