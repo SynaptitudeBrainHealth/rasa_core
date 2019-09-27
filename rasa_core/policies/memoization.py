@@ -291,14 +291,19 @@ class AugmentedMemoizationPolicy(MemoizationPolicy):
         logger.debug("Launch DeLorean...")
         mcfly_tracker = self._back_to_the_future_again(tracker)
         while mcfly_tracker is not None:
+            logger.info("in memoization while loop")
             tracker_as_states = self.featurizer.prediction_states(
                 [mcfly_tracker], domain)
             states = tracker_as_states[0]
 
+            logger.info("in memoization old_states: {}".format(old_states))
+            logger.info("in memoization states: {}".format(states))
             if old_states != states:
+                logger.info("in memoization first if loop")
                 # check if we like new futures
                 memorised = self._recall_states(states)
                 if memorised is not None:
+                    logger.info("in memoization inside inner most if")
                     logger.debug("Current tracker state {}".format(states))
                     return memorised
                 old_states = states
@@ -307,6 +312,7 @@ class AugmentedMemoizationPolicy(MemoizationPolicy):
             mcfly_tracker = self._back_to_the_future_again(mcfly_tracker)
 
         # No match found
+        logger.info("in memoization current tracker from outside while")
         logger.debug("Current tracker state {}".format(old_states))
         return None
 
