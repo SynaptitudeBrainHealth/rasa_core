@@ -1,0 +1,434 @@
+[
+    {
+        "text": "good morning",
+        "intent": "greet",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "good evening",
+        "intent": "greet",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "moin",
+        "intent": "greet",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "let's go",
+        "intent": "greet",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "goodmorning",
+        "intent": "greet",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "goodevening",
+        "intent": "greet",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "good afternoon",
+        "intent": "greet",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "cu",
+        "intent": "goodbye",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "good by",
+        "intent": "goodbye",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "cee you later",
+        "intent": "goodbye",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "good night",
+        "intent": "goodbye",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "good afternoon",
+        "intent": "goodbye",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "have a nice day",
+        "intent": "goodbye",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "see you around",
+        "intent": "goodbye",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "see you later",
+        "intent": "goodbye",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "yes",
+        "intent": "mood_affirm",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "indeed",
+        "intent": "mood_affirm",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "of course",
+        "intent": "mood_affirm",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "that sounds good",
+        "intent": "mood_affirm",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "correct",
+        "intent": "mood_affirm",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "no",
+        "intent": "mood_deny",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "never",
+        "intent": "mood_deny",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "I don't think so",
+        "intent": "mood_deny",
+        "intent_prediction": {
+            "name": "greet",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "don't like that",
+        "intent": "mood_deny",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "no way",
+        "intent": "mood_deny",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "perfect",
+        "intent": "mood_great",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "very good",
+        "intent": "mood_great",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "great",
+        "intent": "mood_great",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "amazing",
+        "intent": "mood_great",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "feeling like a king",
+        "intent": "mood_great",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "wonderful",
+        "intent": "mood_great",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "I am feeling very good",
+        "intent": "mood_great",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "I am great",
+        "intent": "mood_great",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "I am amazing",
+        "intent": "mood_great",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "I am going to save the world",
+        "intent": "mood_great",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "super",
+        "intent": "mood_great",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "extremely good",
+        "intent": "mood_great",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "so so perfect",
+        "intent": "mood_great",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "so good",
+        "intent": "mood_great",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "so perfect",
+        "intent": "mood_great",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "my day was horrible",
+        "intent": "mood_unhappy",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "I am sad",
+        "intent": "mood_unhappy",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "I don't feel very well",
+        "intent": "mood_unhappy",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "I am disappointed",
+        "intent": "mood_unhappy",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "super sad",
+        "intent": "mood_unhappy",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "I'm so sad",
+        "intent": "mood_unhappy",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "sad",
+        "intent": "mood_unhappy",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "very sad",
+        "intent": "mood_unhappy",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "unhappy",
+        "intent": "mood_unhappy",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "not so good",
+        "intent": "mood_unhappy",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "not very good",
+        "intent": "mood_unhappy",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "extremly sad",
+        "intent": "mood_unhappy",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "so saad",
+        "intent": "mood_unhappy",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    },
+    {
+        "text": "so sad",
+        "intent": "mood_unhappy",
+        "intent_prediction": {
+            "name": "",
+            "confidence": 1.0
+        }
+    }
+]

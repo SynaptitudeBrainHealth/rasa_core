@@ -1,4 +1,3 @@
-import aiohttp
 import sys
 
 import json
@@ -100,7 +99,7 @@ async def test_formbot_example():
 
 
 async def test_concertbot_training():
-    from examples.concertbot.train import train_dialogue
+    from tests.core.examples.concertbot.train import train_dialogue
 
     r = await train_dialogue(domain_file='examples/concertbot/domain.yml',
                              stories_file='examples/concertbot/data/stories.md',

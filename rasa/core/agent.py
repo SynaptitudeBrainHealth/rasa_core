@@ -137,6 +137,24 @@ async def _pull_model_and_fingerprint(model_server: EndpointConfig,
     logger.debug("Requesting model from server {}..."
                  "".format(model_server.url))
 
+    logger.debug("JOEL params:  {} "
+                 "".format(model_server.params))
+
+    logger.debug("JOEL headers: {} "
+                 "".format(model_server.headers))
+
+    logger.debug("JOEL: token   {}"
+                 "".format(model_server.token))
+
+    logger.debug("JOEL: basic_auth  {}"
+                 "".format(model_server.basic_auth))
+
+    logger.debug("JOEL: kwargs  {}"
+                 "".format(model_server.token_name))
+
+    logger.debug("JOEL: kwargs  {}"
+                 "".format(model_server.kwargs))
+
     async with model_server.session() as session:
         try:
             params = model_server.combine_parameters()

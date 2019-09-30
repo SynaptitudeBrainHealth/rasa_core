@@ -1,0 +1,31 @@
+{
+  "action_fingerprints": {
+    "action_listen": {
+      "slots": [
+        "people",
+        "price",
+        "location",
+        "cuisine"
+      ]
+    },
+    "utter_goodbye": {
+      "slots": []
+    }
+  },
+  "python": "3.7.2",
+  "max_histories": [
+    3,
+    5,
+    5
+  ],
+  "ensemble_name": "rasa.core.policies.ensemble.SimplePolicyEnsemble",
+  "policy_names": [
+    "rasa.core.policies.memoization.MemoizationPolicy",
+    "rasa.core.policies.mapping_policy.MappingPolicy",
+    "policy.RestaurantPolicy"
+  ],
+  "trained_at": "20190930-140431",
+  "rasa": "0.15.0a1",
+  "tensorflow": "1.13.1",
+  "sklearn": "0.20.2"
+}
