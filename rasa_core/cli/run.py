@@ -42,6 +42,10 @@ def add_run_arguments(parser):
         '--endpoints',
         default=None,
         help="Configuration file for the connectors as a yml file")
+    server_arguments.add_argument(
+        "--remote-storage",
+        help="Set the remote location where your Rasa model is stored, e.g. on AWS.",
+    )
 
     jwt_auth = parser.add_argument_group('JWT Authentication')
     jwt_auth.add_argument(

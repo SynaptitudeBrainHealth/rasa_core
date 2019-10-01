@@ -4,8 +4,7 @@ from functools import partial
 import argparse
 import logging
 from sanic import Sanic
-from sanic_cors import CORS
-from typing import List, Optional, Text
+from typing import List, Optional, Text, Union
 
 import rasa_core.cli.arguments
 import rasa.utils
@@ -16,6 +15,8 @@ from rasa_core.channels import (BUILTIN_CHANNELS, InputChannel, console)
 from rasa_core.interpreter import NaturalLanguageInterpreter
 from rasa_core.tracker_store import TrackerStore
 from rasa_core.utils import AvailableEndpoints, read_yaml_file
+from rasa_core import server, agent
+
 
 logger = logging.getLogger()  # get the root logger
 
@@ -77,6 +78,13 @@ def _create_single_channel(channel, credentials):
                 "is a proper name of a class in a module.".format(channel))
 
 
+def _create_app_without_api(cors: Optional[Union[Text, List[Text]]] = None):
+    app = Sanic(__name__, configure_logging=False)
+    server.add_root_route(app)
+    server.configure_cors(app, cors)
+    return app
+
+
 def configure_app(input_channels=None,
                   cors=None,
                   auth_token=None,
@@ -84,7 +92,8 @@ def configure_app(input_channels=None,
                   jwt_secret=None,
                   jwt_method=None,
                   route="/webhooks/",
-                  port=None):
+                  port=None,
+                  ):
     """Run the agent."""
     from rasa_core import server
 
@@ -92,12 +101,10 @@ def configure_app(input_channels=None,
         app = server.create_app(cors_origins=cors,
                                 auth_token=auth_token,
                                 jwt_secret=jwt_secret,
-                                jwt_method=jwt_method)
+                                jwt_method=jwt_method,
+                                )
     else:
-        app = Sanic(__name__)
-        CORS(app,
-             resources={r"/*": {"origins": cors or ""}},
-             automatic_options=True)
+        app = _create_app_without_api(cors)
 
     if input_channels:
         rasa_core.channels.channel.register(input_channels,
@@ -141,7 +148,8 @@ def serve_application(core_model=None,
                       enable_api=True,
                       jwt_secret=None,
                       jwt_method=None,
-                      endpoints=None
+                      endpoints=None,
+                      remote_storage: Optional[Text] = None,
                       ):
     if not channel and not credentials_file:
         channel = "cmdline"
@@ -155,14 +163,14 @@ def serve_application(core_model=None,
                 "{}".format(constants.DEFAULT_SERVER_FORMAT.format(port)))
 
     app.register_listener(
-        partial(load_agent_on_start, core_model, endpoints, nlu_model),
+        partial(load_agent_on_start, core_model, endpoints, nlu_model, remote_storage),
         'before_server_start')
     app.run(host='0.0.0.0', port=port,
             access_log=logger.isEnabledFor(logging.DEBUG))
 
 
 # noinspection PyUnusedLocal
-async def load_agent_on_start(core_model, endpoints, nlu_model, app, loop):
+async def load_agent_on_start(core_model, endpoints, nlu_model, remote_storage, app, loop):
     """Load an agent.
 
     Used to be scheduled on server start
@@ -177,22 +185,31 @@ async def load_agent_on_start(core_model, endpoints, nlu_model, app, loop):
     _tracker_store = TrackerStore.find_tracker_store(
         None, endpoints.tracker_store, _broker)
 
-    if endpoints and endpoints.model:
-        from rasa_core import agent
+    model_server = endpoints.model if endpoints and endpoints.model else None
 
-        app.agent = Agent(interpreter=_interpreter,
-                          generator=endpoints.nlg,
-                          tracker_store=_tracker_store,
-                          action_endpoint=endpoints.action)
+    app.agent = await agent.load_agent(
+        core_model,
+        model_server=model_server,
+        remote_storage=remote_storage,
+        interpreter=_interpreter,
+        generator=endpoints.nlg,
+        tracker_store=_tracker_store,
+        action_endpoint=endpoints.action,
+    )
 
-        await agent.load_from_server(app.agent,
-                                     model_server=endpoints.model)
-    else:
-        app.agent = Agent.load(core_model,
-                               interpreter=_interpreter,
-                               generator=endpoints.nlg,
-                               tracker_store=_tracker_store,
-                               action_endpoint=endpoints.action)
+    if not app.agent:
+        logger.warning(
+            "Agent could not be loaded with the provided configuration. "
+            "Load default agent without any model."
+        )
+        app.agent = Agent(
+            interpreter=_interpreter,
+            generator=endpoints.nlg,
+            tracker_store=_tracker_store,
+            action_endpoint=endpoints.action,
+            model_server=model_server,
+            remote_storage=remote_storage,
+        )
 
     return app.agent
 
@@ -213,6 +230,8 @@ if __name__ == '__main__':
 
     _endpoints = AvailableEndpoints.read_endpoints(cmdline_args.endpoints)
 
+    logger.debug("in __main__ rasa_core/run {}".format(cmdline_args))
+
     serve_application(cmdline_args.core,
                       cmdline_args.nlu,
                       cmdline_args.connector,
@@ -223,4 +242,5 @@ if __name__ == '__main__':
                       cmdline_args.enable_api,
                       cmdline_args.jwt_secret,
                       cmdline_args.jwt_method,
-                      _endpoints)
+                      _endpoints,
+                      cmdline_args.remote_storage)

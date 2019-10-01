@@ -34,3 +34,7 @@ class AgentNotReady(RasaCoreException):
 
     def __init__(self, message):
         self.message = message
+
+
+class ModelNotFound(RasaCoreException):
+    """Raised when a model is not found in the path provided by the user."""
