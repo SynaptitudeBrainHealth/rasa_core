@@ -19,10 +19,9 @@ from rasa_core.domain import Domain
 from rasa_core.events import Event
 from rasa_core.policies import PolicyEnsemble
 from rasa_core.test import test
-from rasa_core.trackers import EventVerbosity
+from rasa_core.trackers import EventVerbosity, DialogueStateTracker
 from rasa_core.utils import dump_obj_as_str_to_file
 from rasa_core.agent import load_agent
-from rasa_core.trackers import DialogueStateTracker
 from rasa_core.utils import EndpointConfig
 from rasa_core.utils import AvailableEndpoints
 from rasa_core.agent import Agent

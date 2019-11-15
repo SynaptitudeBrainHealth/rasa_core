@@ -99,10 +99,8 @@ def _load_and_set_updated_model(agent: 'Agent',
         interpreter = agent.interpreter
         core_model = model_directory
 
-    domain = None
-    if core_path:
-        domain_path = os.path.join(os.path.abspath(core_model), "domain.yml")
-        domain = Domain.load(domain_path)
+    domain_path = os.path.join(os.path.abspath(stack_model_directory), "domain.yml")
+    domain = Domain.load(domain_path)
 
     # noinspection PyBroadException
     try:
@@ -369,7 +367,7 @@ class Agent(object):
         domain = None
         ensemble = None
         if path:
-            domain = Domain.load(os.path.join(path, "rasa_core/domain.yml"))
+            domain = Domain.load(os.path.join(path, "domain.yml"))
             ensemble = PolicyEnsemble.load(path) if path else None
 
             # ensures the domain hasn't changed between test and train
