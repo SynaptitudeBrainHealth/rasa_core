@@ -764,10 +764,6 @@ def create_app(agent=None,
                      "model_file: {}, model_server: {}, remote_storage: {}, endpoints: {}".
                      format(model_path, model_server, remote_storage, endpoints))
 
-        print("PUT model request contains the following parameters: "
-        "model_file: {}, model_server: {}, remote_storage: {}, endpoints: {}".
-              format(model_path, model_server, remote_storage, endpoints))
-
         _endpoints = AvailableEndpoints.read_endpoints(endpoints)
 
         app.agent = await _load_agent(
