@@ -753,13 +753,25 @@ def create_app(agent=None,
     @requires_auth(app, auth_token)
     async def load_model(request: Request):
         validate_request_body(request, "No path to model file defined in request_body.")
-
+        logger.debug("Received PUT request to /model endpoint... Loading new RASA core model from S3")
+        # Get params from request.
         model_path = request.json.get("model_file", None)
         model_server = request.json.get("model_server", None)
         remote_storage = request.json.get("remote_storage", None)
+        endpoints = request.json.get("endpoints", None)
 
+        logger.debug("PUT model request contains the following parameters: "
+                     "model_file: {}, model_server: {}, remote_storage: {}, endpoints: {}".
+                     format(model_path, model_server, remote_storage, endpoints))
+
+        print("PUT model request contains the following parameters: "
+        "model_file: {}, model_server: {}, remote_storage: {}, endpoints: {}".
+              format(model_path, model_server, remote_storage, endpoints))
+
+        _endpoints = AvailableEndpoints.read_endpoints(endpoints)
+        logger.debug()
         app.agent = await _load_agent(
-            model_path, model_server, remote_storage, endpoints=None, lock_store=None
+            model_path, model_server, remote_storage, endpoints=_endpoints, lock_store=None
         )
 
         logger.debug("Successfully loaded model '{}'.".format(model_path))
