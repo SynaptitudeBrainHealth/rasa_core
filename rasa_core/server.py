@@ -769,7 +769,7 @@ def create_app(agent=None,
               format(model_path, model_server, remote_storage, endpoints))
 
         _endpoints = AvailableEndpoints.read_endpoints(endpoints)
-        logger.debug()
+
         app.agent = await _load_agent(
             model_path, model_server, remote_storage, endpoints=_endpoints, lock_store=None
         )
