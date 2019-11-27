@@ -25,6 +25,7 @@ from rasa_core.agent import load_agent
 from rasa_core.utils import EndpointConfig
 from rasa_core.utils import AvailableEndpoints
 from rasa_core.agent import Agent
+from rasa_core.interpreter import NaturalLanguageInterpreter
 
 logger = logging.getLogger(__name__)
 
@@ -714,17 +715,20 @@ def create_app(agent=None,
             model_server: Optional[EndpointConfig] = None,
             remote_storage: Optional[Text] = None,
             endpoints: Optional[AvailableEndpoints] = None,
-            lock_store = None,
+            lock_store=None,
+            interpreter=None
     ) -> Agent:
         try:
             tracker_store = None
             generator = None
             action_endpoint = endpoints.action
 
+
             loaded_agent = await load_agent(
                 model_path,
                 model_server,
                 remote_storage,
+                interpreter=interpreter,
                 generator=generator,
                 tracker_store=tracker_store,
                 action_endpoint=action_endpoint,
@@ -759,15 +763,17 @@ def create_app(agent=None,
         model_server = request.json.get("model_server", None)
         remote_storage = request.json.get("remote_storage", None)
         endpoints = request.json.get("endpoints", None)
+        nlu_model = request.json.get("nlu_model", None)
 
         logger.debug("PUT model request contains the following parameters: "
-                     "model_file: {}, model_server: {}, remote_storage: {}, endpoints: {}".
-                     format(model_path, model_server, remote_storage, endpoints))
+                     "model_file: {}, model_server: {}, remote_storage: {}, endpoints: {}, nlu_model {}".
+                     format(model_path, model_server, remote_storage, endpoints, nlu_model))
 
+        _interpreter = NaturalLanguageInterpreter.create(nlu_model, endpoints.nlu)
         _endpoints = AvailableEndpoints.read_endpoints(endpoints)
 
         app.agent = await _load_agent(
-            model_path, model_server, remote_storage, endpoints=_endpoints, lock_store=None
+            model_path, model_server, remote_storage, endpoints=_endpoints, lock_store=None, interpreter=_interpreter
         )
 
         logger.debug("Successfully loaded model '{}'.".format(model_path))
