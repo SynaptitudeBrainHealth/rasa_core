@@ -769,8 +769,8 @@ def create_app(agent=None,
                      "model_file: {}, model_server: {}, remote_storage: {}, endpoints: {}, nlu_model {}".
                      format(model_path, model_server, remote_storage, endpoints, nlu_model))
 
-        _interpreter = NaturalLanguageInterpreter.create(nlu_model, endpoints.nlu)
         _endpoints = AvailableEndpoints.read_endpoints(endpoints)
+        _interpreter = NaturalLanguageInterpreter.create(nlu_model)
 
         app.agent = await _load_agent(
             model_path, model_server, remote_storage, endpoints=_endpoints, lock_store=None, interpreter=_interpreter
