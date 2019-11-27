@@ -719,7 +719,7 @@ def create_app(agent=None,
         try:
             tracker_store = None
             generator = None
-            action_endpoint = None
+            action_endpoint = endpoints.action
 
             loaded_agent = await load_agent(
                 model_path,
