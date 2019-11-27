@@ -772,8 +772,8 @@ def create_app(agent=None,
         _endpoints = AvailableEndpoints.read_endpoints(endpoints)
 
         nlu_endpoint = None
-        if endpoints.nlu:
-            nlu_endpoint = endpoints.nlu
+        if _endpoints.nlu:
+            nlu_endpoint = _endpoints.nlu
 
         _interpreter = NaturalLanguageInterpreter.create(nlu_model, nlu_endpoint)
 
