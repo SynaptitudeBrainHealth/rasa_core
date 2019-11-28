@@ -5,6 +5,7 @@ import errno
 import json
 import logging
 import os
+import shutil
 import re
 import sys
 import tarfile
@@ -14,9 +15,9 @@ import zipfile
 from asyncio import AbstractEventLoop, Future
 from hashlib import md5, sha1
 from io import BytesIO as IOReader, StringIO
+from types import TracebackType
 from typing import (
-    Any, Dict, List, Optional, Set, TYPE_CHECKING, Text, Tuple,
-    Callable)
+    Any, Dict, List, Optional, Set, TYPE_CHECKING, Text, Tuple, Type, Callable)
 
 import aiohttp
 from aiohttp import InvalidURL
@@ -39,7 +40,6 @@ def configure_file_logging(loglevel, logfile):
         fh.setLevel(loglevel)
         logging.getLogger('').addHandler(fh)
     logging.captureWarnings(True)
-
 
 # noinspection PyUnresolvedReferences
 def class_from_module_path(module_path: Text) -> Any:
@@ -798,3 +798,22 @@ class LockCounter(asyncio.Lock):
     def is_someone_waiting(self) -> bool:
         """Check if a coroutine is waiting for this lock to be freed."""
         return self.wait_counter != 0
+
+
+class TempDirectoryPath(str):
+    """Represents a path to an temporary directory. When used as a context
+    manager, it erases the contents of the directory on exit.
+
+    """
+
+    def __enter__(self) -> "TempDirectoryPath":
+        return self
+
+    def __exit__(
+        self,
+        _exc: Optional[Type[BaseException]],
+        _value: Optional[Exception],
+        _tb: Optional[TracebackType],
+    ) -> bool:
+        if os.path.exists(self):
+            shutil.rmtree(self)

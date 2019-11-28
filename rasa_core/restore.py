@@ -152,7 +152,8 @@ async def serve_application(core_model: Text = None,
                             tracker_dump: Optional[Text] = None,
                             port=constants.DEFAULT_SERVER_PORT,
                             enable_api=True,
-                            endpoints=None
+                            endpoints=None,
+                            remote_storage: Optional[Text] = None,
                             ):
     input_channels = run.create_http_input_channels("cmdline", None)
 
@@ -164,7 +165,7 @@ async def serve_application(core_model: Text = None,
     # noinspection PyShadowingNames
     async def load_agent_and_tracker(app, loop):
         agent = await run.load_agent_on_start(core_model, endpoints,
-                                              nlu_model, app, loop)
+                                              nlu_model, remote_storage, app, loop)
 
         tracker = load_tracker_from_json(tracker_dump,
                                          agent.domain)

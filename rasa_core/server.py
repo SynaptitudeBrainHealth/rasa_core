@@ -19,8 +19,13 @@ from rasa_core.domain import Domain
 from rasa_core.events import Event
 from rasa_core.policies import PolicyEnsemble
 from rasa_core.test import test
-from rasa_core.trackers import DialogueStateTracker, EventVerbosity
+from rasa_core.trackers import EventVerbosity, DialogueStateTracker
 from rasa_core.utils import dump_obj_as_str_to_file
+from rasa_core.agent import load_agent
+from rasa_core.utils import EndpointConfig
+from rasa_core.utils import AvailableEndpoints
+from rasa_core.agent import Agent
+from rasa_core.interpreter import NaturalLanguageInterpreter
 
 logger = logging.getLogger(__name__)
 
@@ -174,6 +179,24 @@ async def authenticate(request):
         "Direct JWT authentication not supported. You should already have "
         "a valid JWT from an authentication provider, Rasa will just make "
         "sure that the token is valid, but not issue new tokens.")
+
+
+def configure_cors(app: Sanic, cors_origins: Union[Text, List[Text]] = "") -> None:
+    """Configure CORS origins for the given app."""
+
+    # Workaround so that socketio works with requests from other origins.
+    # https://github.com/miguelgrinberg/python-socketio/issues/205#issuecomment-493769183
+    app.config.CORS_AUTOMATIC_OPTIONS = True
+    app.config.CORS_SUPPORTS_CREDENTIALS = True
+
+    CORS(app, resources={r"/*": {"origins": cors_origins}}, automatic_options=True)
+
+
+def add_root_route(app: Sanic):
+    @app.get("/")
+    async def hello(request: Request):
+        """Check if the server is running and responds with the version."""
+        return response.text("Hello from Rasa: " + rasa.__version__)
 
 
 def create_app(agent=None,
@@ -689,6 +712,80 @@ def create_app(agent=None,
         request_params = request.json
         parse_data = await app.agent.interpreter.parse(request_params.get("q"))
         return response.json(parse_data)
+
+    async def _load_agent(
+            model_path: Optional[Text] = None,
+            model_server: Optional[EndpointConfig] = None,
+            remote_storage: Optional[Text] = None,
+            endpoints: Optional[AvailableEndpoints] = None,
+            lock_store=None,
+            interpreter=None
+    ) -> Agent:
+        try:
+            tracker_store = None
+            generator = None
+            action_endpoint = endpoints.action
+
+
+            loaded_agent = await load_agent(
+                model_path,
+                model_server,
+                remote_storage,
+                interpreter=interpreter,
+                generator=generator,
+                tracker_store=tracker_store,
+                action_endpoint=action_endpoint,
+            )
+        except Exception as e:
+            logger.debug(e.args[0])
+            raise ErrorResponse(
+                500, "LoadingError", "An unexpected error occurred. Error: {}".format(e)
+            )
+
+        if not loaded_agent:
+            raise ErrorResponse(
+                400,
+                "BadRequest",
+                "Agent with name '{}' could not be loaded.".format(model_path),
+                {"parameter": "model", "in": "query"},
+            )
+
+        return loaded_agent
+
+    def validate_request_body(request: Request, error_message: Text):
+        if not request.body:
+            raise ErrorResponse(400, "BadRequest", error_message)
+
+    @app.put("/model")
+    @requires_auth(app, auth_token)
+    async def load_model(request: Request):
+        validate_request_body(request, "No path to model file defined in request_body.")
+        logger.debug("Received PUT request to /model endpoint... Loading new RASA core model from S3")
+        # Get params from request.
+        model_path = request.json.get("model_file", None)
+        model_server = request.json.get("model_server", None)
+        remote_storage = request.json.get("remote_storage", None)
+        endpoints = request.json.get("endpoints", None)
+        nlu_model = request.json.get("nlu_model", None)
+
+        logger.debug("PUT model request contains the following parameters: "
+                     "model_file: {}, model_server: {}, remote_storage: {}, endpoints: {}, nlu_model {}".
+                     format(model_path, model_server, remote_storage, endpoints, nlu_model))
+
+        _endpoints = AvailableEndpoints.read_endpoints(endpoints)
+
+        nlu_endpoint = None
+        if _endpoints.nlu:
+            nlu_endpoint = _endpoints.nlu
+
+        _interpreter = NaturalLanguageInterpreter.create(nlu_model, nlu_endpoint)
+
+        app.agent = await _load_agent(
+            model_path, model_server, remote_storage, endpoints=_endpoints, lock_store=None, interpreter=_interpreter
+        )
+
+        logger.debug("Successfully loaded model '{}'.".format(model_path))
+        return response.json(None, status=204)
 
     return app
 
