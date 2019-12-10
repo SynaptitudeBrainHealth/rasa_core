@@ -738,13 +738,9 @@ def create_app(agent=None,
             action_endpoint = endpoints.action
 
             if endpoints:
-                _broker = rasa.core.brokers.utils.from_endpoint_config(
-                    endpoints.event_broker
-                )
                 tracker_store = TrackerStore.find_tracker_store(
-                    None, endpoints.tracker_store, _broker
+                    None, endpoints.tracker_store
                 )
-                generator = endpoints.nlg
                 action_endpoint = endpoints.action
 
             loaded_agent = await load_agent(
