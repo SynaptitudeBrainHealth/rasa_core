@@ -48,3 +48,5 @@ kafka-python==1.4.4
 sklearn-crfsuite==0.3.6
 raven==6.10.0
 blinker==1.4
+tornado==6.0.3
+
