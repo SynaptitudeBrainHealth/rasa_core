@@ -26,6 +26,8 @@ from rasa_core.utils import EndpointConfig
 from rasa_core.utils import AvailableEndpoints
 from rasa_core.agent import Agent
 from rasa_core.interpreter import NaturalLanguageInterpreter
+from rasa_core.tracker_store import TrackerStore
+
 
 logger = logging.getLogger(__name__)
 
@@ -204,6 +206,7 @@ def create_app(agent=None,
                auth_token: Optional[Text] = None,
                jwt_secret: Optional[Text] = None,
                jwt_method: Text = "HS256",
+               endpoints: Optional[AvailableEndpoints] = None,
                ):
     """Class representing a Rasa Core HTTP server."""
 
@@ -718,14 +721,30 @@ def create_app(agent=None,
             model_server: Optional[EndpointConfig] = None,
             remote_storage: Optional[Text] = None,
             endpoints: Optional[AvailableEndpoints] = None,
-            lock_store=None,
             interpreter=None
     ) -> Agent:
+        """
+        Configures and returns a rasa core Agent. (Interface)
+        Args:
+            model_path: Path to a combined Rasa model.
+            model_server: Access credentials of a model server.
+            remote_storage: string reference to a cloud persistence storage solution.
+            endpoints: Path to endpoints configuration yaml file.
+            interpreter: n/a
+
+        Returns
+            loaded_agent: configured rasa core Agent. (Interface)
+        """
         try:
             tracker_store = None
             generator = None
             action_endpoint = endpoints.action
 
+            if endpoints:
+                tracker_store = TrackerStore.find_tracker_store(
+                    None, endpoints.tracker_store
+                )
+                action_endpoint = endpoints.action
 
             loaded_agent = await load_agent(
                 model_path,
@@ -759,30 +778,46 @@ def create_app(agent=None,
     @app.put("/model")
     @requires_auth(app, auth_token)
     async def load_model(request: Request):
-        validate_request_body(request, "No path to model file defined in request_body.")
+        """
+        Endpoint to trigger the fetch and load of a rasa core trained model ( in tar.gz form ) from
+         an AWS remote storage service (S3)
+
+        The /model endpoint expects a request with the following JSON payload parameters:
+
+            - model_file:
+            - model_server:
+            - remote_storage:
+            - endpoints: Path to endpoints file.
+            - nlu_model:
+            - credentials: Path to channel credentials file.
+
+        """
         logger.debug("Received PUT request to /model endpoint... Loading new RASA core model from S3")
+
+        validate_request_body(request, "No path to model file defined in request_body.")
+
         # Get params from request.
         model_path = request.json.get("model_file", None)
         model_server = request.json.get("model_server", None)
         remote_storage = request.json.get("remote_storage", None)
         endpoints = request.json.get("endpoints", None)
         nlu_model = request.json.get("nlu_model", None)
-
         logger.debug("PUT model request contains the following parameters: "
                      "model_file: {}, model_server: {}, remote_storage: {}, endpoints: {}, nlu_model {}".
                      format(model_path, model_server, remote_storage, endpoints, nlu_model))
 
-        _endpoints = AvailableEndpoints.read_endpoints(endpoints)
-
+        # Configure Endpoints
         nlu_endpoint = None
+        _endpoints = AvailableEndpoints.read_endpoints(endpoints)
         if _endpoints.nlu:
             nlu_endpoint = _endpoints.nlu
 
+        # Configure NLI
         _interpreter = NaturalLanguageInterpreter.create(nlu_model, nlu_endpoint)
 
-        app.agent = await _load_agent(
-            model_path, model_server, remote_storage, endpoints=_endpoints, lock_store=None, interpreter=_interpreter
-        )
+        # Set app agent.
+        app.agent = await \
+            _load_agent(model_path, model_server, remote_storage, endpoints=_endpoints, interpreter=_interpreter)
 
         logger.debug("Successfully loaded model '{}'.".format(model_path))
         return response.json(None, status=204)
