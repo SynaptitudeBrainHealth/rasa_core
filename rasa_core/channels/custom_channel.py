@@ -16,19 +16,10 @@ from threading import Thread
 from sanic import Sanic, Blueprint, response
 from rasa_core import utils
 from rasa_core.channels.channel import InputChannel, UserMessage, QueueOutputChannel, RestInput
-from raven.handlers.logging import SentryHandler
-from raven import Client
-from raven.contrib.flask import Sentry
-from raven.conf import setup_logging
 from flask.json import jsonify
 import datetime
 # Local imports
 
-sentry = Sentry(dsn="https://d0d37fc0964e41b699ac5fe456218ae0:f8bd8517dfb54e5bb124f1a99fc682f4@sentry.io/1318460",logging=True)
-client = Client(dsn="https://d0d37fc0964e41b699ac5fe456218ae0:f8bd8517dfb54e5bb124f1a99fc682f4@sentry.io/1318460")
-handler = SentryHandler(client)
-handler.setLevel(logging.INFO)
-setup_logging(handler)
 
 logger = logging.getLogger(__name__)
 
