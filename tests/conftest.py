@@ -25,31 +25,47 @@ matplotlib.use('Agg')
 
 logging.basicConfig(level="DEBUG")
 
+#Note: If this test fails from
+#within PyCharm go to :
+# 1. Run -> Edit Configurations -> Working directory
+#       Change that to remove /tests from the path such that the Rasa base
+#       directory is available to run tests, and look for files
+#       relative to that path.
+#2. Add an environment variable called BASE_PATH in the Run configuration
+#   to enable the paths below.
 DEFAULT_DOMAIN_PATH = "data/test_domains/default_with_slots.yml"
-
 DEFAULT_STORIES_FILE = "data/test_stories/stories_defaultdomain.md"
-
 DEFAULT_STACK_CONFIG = "data/test_config/stack_config.yml"
-
 DEFAULT_NLU_DATA = "examples/moodbot/data/nlu.md"
-
 END_TO_END_STORY_FILE = "data/test_evaluations/end_to_end_story.md"
-
 E2E_STORY_FILE_UNKNOWN_ENTITY = "data/test_evaluations/story_unknown_entity.md"
-
 MOODBOT_MODEL_PATH = "examples/moodbot/models/dialogue"
-
 DEFAULT_ENDPOINTS_FILE = "data/test_endpoints/example_endpoints.yml"
-
 TEST_DIALOGUES = ['data/test_dialogues/default.json',
                   'data/test_dialogues/formbot.json',
                   'data/test_dialogues/moodbot.json',
                   'data/test_dialogues/restaurantbot.json']
-
 EXAMPLE_DOMAINS = [DEFAULT_DOMAIN_PATH,
                    "examples/formbot/domain.yml",
                    "examples/moodbot/domain.yml",
                    "examples/restaurantbot/domain.yml"]
+
+base_path_string = 'BASE_PATH'
+base_path = ''
+if base_path_string in os.environ:
+    base_path = os.environ.get(base_path_string)
+    DEFAULT_DOMAIN_PATH = os.path.join(base_path, DEFAULT_DOMAIN_PATH)
+    DEFAULT_STORIES_FILE = os.path.join(base_path, DEFAULT_STORIES_FILE)
+    DEFAULT_STACK_CONFIG = os.path.join(base_path, DEFAULT_STACK_CONFIG)
+    DEFAULT_NLU_DATA = os.path.join(base_path, DEFAULT_NLU_DATA)
+    END_TO_END_STORY_FILE = os.path.join(base_path, END_TO_END_STORY_FILE)
+    E2E_STORY_FILE_UNKNOWN_ENTITY = os.path.join(base_path, E2E_STORY_FILE_UNKNOWN_ENTITY)
+    MOODBOT_MODEL_PATH = os.path.join(base_path, MOODBOT_MODEL_PATH)
+    DEFAULT_ENDPOINTS_FILE = os.path.join(base_path,"data/test_endpoints/example_endpoints.yml")
+    TEST_DIALOGUES = [os.path.join(base_path, path_in_list) for path_in_list in TEST_DIALOGUES if
+                      not os.path.isabs(path_in_list)]
+    EXAMPLE_DOMAINS = [os.path.join(base_path, path_in_list) for path_in_list in EXAMPLE_DOMAINS if
+                      not os.path.isabs(path_in_list)]
 
 
 class CustomSlot(Slot):
@@ -137,6 +153,11 @@ async def default_processor(default_domain, default_nlg):
 
 @pytest.fixture(scope="session")
 async def trained_moodbot_path():
+    #Note: If this test fails from
+    #within PyCharm go to Run -> Edit Configurations -> Working directory
+    #Change that to remove /tests from the path such that the Rasa base
+    #directory is available to run tests, and look for files
+    #relative to that path.
     await train(
         domain_file="examples/moodbot/domain.yml",
         stories_file="examples/moodbot/data/stories.md",

@@ -28,7 +28,7 @@ lint:
 	py.test --pep8 -m pep8
 
 test: clean
-	py.test tests --verbose --pep8 --color=yes $(TEST_PATH)
+	py.test tests --verbose --color=yes $(TEST_PATH)
 
 doctest: clean
 	cd docs && make doctest
