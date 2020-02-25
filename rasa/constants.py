@@ -6,3 +6,6 @@ DEFAULT_ACTIONS_PATH = "actions"
 DEFAULT_MODELS_PATH = "models"
 DEFAULT_DATA_PATH = "data"
 DEFAULT_RESULTS_PATH = "results"
+
+DOCS_BASE_URL = "https://rasa.com/docs/rasa"
+DOCS_URL_POLICIES = DOCS_BASE_URL + "/core/policies/"

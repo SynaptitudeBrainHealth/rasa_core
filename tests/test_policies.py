@@ -7,10 +7,11 @@ from rasa_core import training, utils
 from rasa_core.actions.action import (
     ACTION_DEFAULT_ASK_AFFIRMATION_NAME, ACTION_DEFAULT_ASK_REPHRASE_NAME,
     ACTION_DEFAULT_FALLBACK_NAME, ACTION_LISTEN_NAME,
-    ActionRevertFallbackEvents)
+    ActionRevertFallbackEvents, ACTION_RESTART_NAME)
+from rasa_core.constants import USER_INTENT_RESTART
 from rasa_core.channels import UserMessage
 from rasa_core.domain import Domain, InvalidDomain
-from rasa_core.events import ActionExecuted
+from rasa_core.events import ActionExecuted, ConversationPaused
 from rasa_core.featurizers import (
     BinarySingleStateFeaturizer, MaxHistoryTrackerFeaturizer)
 from rasa_core.policies import TwoStageFallbackPolicy
@@ -18,11 +19,12 @@ from rasa_core.policies.embedding_policy import EmbeddingPolicy
 from rasa_core.policies.fallback import FallbackPolicy
 from rasa_core.policies.form_policy import FormPolicy
 from rasa_core.policies.keras_policy import KerasPolicy
+from rasa_core.policies.mapping_policy import MappingPolicy
 from rasa_core.policies.memoization import (
     AugmentedMemoizationPolicy, MemoizationPolicy)
 from rasa_core.policies.sklearn_policy import SklearnPolicy
 from rasa_core.trackers import DialogueStateTracker
-from tests.conftest import DEFAULT_DOMAIN_PATH, DEFAULT_STORIES_FILE
+from tests.conftest import DEFAULT_DOMAIN_PATH, DEFAULT_STORIES_FILE, DEFAULT_DOMAIN_PATH_WITH_MAPPING
 from tests.utilities import get_tracker, read_dialogue_file, user_uttered
 
 
@@ -144,6 +146,13 @@ class PolicyTestCollection(object):
             # noinspection PyProtectedMember
             assert loaded.session._config is None
 
+    @staticmethod
+    def _get_next_action(policy, events, domain):
+        tracker = get_tracker(events)
+
+        scores = policy.predict_action_probabilities(tracker, domain)
+        index = scores.index(max(scores))
+        return domain.action_names[index]
 
 class TestKerasPolicy(PolicyTestCollection):
 
@@ -498,6 +507,85 @@ class TestFormPolicy(PolicyTestCollection):
                           for f, num in
                           zip(domain.input_states, nums)}]
         assert trained_policy.recall(random_states, None, domain) is None
+
+class TestMappingPolicy(PolicyTestCollection):
+    def create_policy(self, featurizer, priority):
+        p = MappingPolicy()
+        return p
+
+    def test_featurizer(self, trained_policy, tmpdir):
+        assert trained_policy.featurizer is None
+        trained_policy.persist(tmpdir.strpath)
+        loaded = trained_policy.__class__.load(tmpdir.strpath)
+        assert loaded.featurizer is None
+
+    @pytest.fixture(scope="module")
+    def domain_with_mapping(self):
+        return Domain.load(DEFAULT_DOMAIN_PATH_WITH_MAPPING)
+
+    @pytest.fixture
+    def tracker(self, domain_with_mapping):
+        return DialogueStateTracker(
+            UserMessage.DEFAULT_SENDER_ID, domain_with_mapping.slots
+        )
+
+    @pytest.fixture(
+        params=[
+            ("default", "utter_default"),
+            ("greet", "utter_greet"),
+            (USER_INTENT_RESTART, ACTION_RESTART_NAME)
+        ]
+    )
+    def intent_mapping(self, request):
+        return request.param
+
+    def test_predict_mapped_action(self, priority, domain_with_mapping, intent_mapping):
+        policy = self.create_policy(None, priority)
+        events = [
+            ActionExecuted(ACTION_LISTEN_NAME),
+            user_uttered(intent_mapping[0], 1),
+        ]
+
+        assert (
+            self._get_next_action(policy, events, domain_with_mapping)
+            == intent_mapping[1]
+        )
+
+    def test_restart_if_paused(self, priority, domain_with_mapping):
+        policy = self.create_policy(None, priority)
+        events = [ConversationPaused(), user_uttered(USER_INTENT_RESTART, 1)]
+
+        assert (
+            self._get_next_action(policy, events, domain_with_mapping)
+            == ACTION_RESTART_NAME
+        )
+
+    def test_predict_action_listen(self, priority, domain_with_mapping, intent_mapping):
+        policy = self.create_policy(None, priority)
+        events = [
+            ActionExecuted(ACTION_LISTEN_NAME),
+            user_uttered(intent_mapping[0], 1),
+            ActionExecuted(intent_mapping[1], policy="policy_0_MappingPolicy"),
+        ]
+        tracker = get_tracker(events)
+        scores = policy.predict_action_probabilities(tracker, domain_with_mapping)
+        index = scores.index(max(scores))
+        action_planned = domain_with_mapping.action_names[index]
+        assert action_planned == ACTION_LISTEN_NAME
+        assert scores != [0] * domain_with_mapping.num_actions
+
+    def test_do_not_follow_other_policy(
+        self, priority, domain_with_mapping, intent_mapping
+    ):
+        policy = self.create_policy(None, priority)
+        events = [
+            ActionExecuted(ACTION_LISTEN_NAME),
+            user_uttered(intent_mapping[0], 1),
+            ActionExecuted(intent_mapping[1], policy="other_policy"),
+        ]
+        tracker = get_tracker(events)
+        scores = policy.predict_action_probabilities(tracker, domain_with_mapping)
+        assert scores == [0] * domain_with_mapping.num_actions
 
 
 class TestTwoStageFallbackPolicy(PolicyTestCollection):

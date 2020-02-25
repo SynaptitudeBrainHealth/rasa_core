@@ -7,6 +7,7 @@ from rasa_core.events import FormValidation
 from rasa_core.featurizers import TrackerFeaturizer
 from rasa_core.policies.memoization import MemoizationPolicy
 from rasa_core.trackers import DialogueStateTracker
+from rasa_core.constants import FORM_POLICY_PRIORITY
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +19,7 @@ class FormPolicy(MemoizationPolicy):
 
     def __init__(self,
                  featurizer: Optional[TrackerFeaturizer] = None,
-                 priority: int = 4,
+                 priority: int = FORM_POLICY_PRIORITY,
                  lookup: Optional[Dict] = None
                  ) -> None:
 

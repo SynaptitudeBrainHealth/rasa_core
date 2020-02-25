@@ -19,6 +19,7 @@ from rasa_core.featurizers import (
     FullDialogueTrackerFeaturizer,
     LabelTokenizerSingleStateFeaturizer)
 from rasa_core.policies.policy import Policy
+from rasa_core.constants import DEFAULT_POLICY_PRIORITY
 
 import tensorflow as tf
 from rasa_core.policies.tf_utils import (
@@ -139,7 +140,7 @@ class EmbeddingPolicy(Policy):
     def __init__(
         self,
         featurizer: Optional[FullDialogueTrackerFeaturizer] = None,
-        priority: int = 1,
+        priority: int = DEFAULT_POLICY_PRIORITY,
         encoded_all_actions: Optional[np.ndarray] = None,
         graph: Optional[tf.Graph] = None,
         session: Optional[tf.Session] = None,

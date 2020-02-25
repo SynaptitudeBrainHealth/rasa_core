@@ -37,6 +37,7 @@ DEFAULT_DOMAIN_PATH = "data/test_domains/default_with_slots.yml"
 DEFAULT_STORIES_FILE = "data/test_stories/stories_defaultdomain.md"
 DEFAULT_STACK_CONFIG = "data/test_config/stack_config.yml"
 DEFAULT_NLU_DATA = "examples/moodbot/data/nlu.md"
+DEFAULT_DOMAIN_PATH_WITH_MAPPING = "data/test_domains/default_with_mapping.yml"
 END_TO_END_STORY_FILE = "data/test_evaluations/end_to_end_story.md"
 E2E_STORY_FILE_UNKNOWN_ENTITY = "data/test_evaluations/story_unknown_entity.md"
 MOODBOT_MODEL_PATH = "examples/moodbot/models/dialogue"
@@ -55,6 +56,7 @@ base_path = ''
 if base_path_string in os.environ:
     base_path = os.environ.get(base_path_string)
     DEFAULT_DOMAIN_PATH = os.path.join(base_path, DEFAULT_DOMAIN_PATH)
+    DEFAULT_DOMAIN_PATH_WITH_MAPPING = os.path.join(base_path, DEFAULT_DOMAIN_PATH_WITH_MAPPING)
     DEFAULT_STORIES_FILE = os.path.join(base_path, DEFAULT_STORIES_FILE)
     DEFAULT_STACK_CONFIG = os.path.join(base_path, DEFAULT_STACK_CONFIG)
     DEFAULT_NLU_DATA = os.path.join(base_path, DEFAULT_NLU_DATA)

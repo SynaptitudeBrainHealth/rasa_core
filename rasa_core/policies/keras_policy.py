@@ -14,6 +14,7 @@ from rasa_core.featurizers import (
 from rasa_core.featurizers import TrackerFeaturizer
 from rasa_core.policies.policy import Policy
 from rasa_core.trackers import DialogueStateTracker
+from rasa_core.constants import DEFAULT_POLICY_PRIORITY
 
 try:
     import cPickle as pickle
@@ -43,7 +44,7 @@ class KerasPolicy(Policy):
 
     def __init__(self,
                  featurizer: Optional[TrackerFeaturizer] = None,
-                 priority: int = 1,
+                 priority: int = DEFAULT_POLICY_PRIORITY,
                  model: Optional[tf.keras.models.Sequential] = None,
                  graph: Optional[tf.Graph] = None,
                  session: Optional[tf.Session] = None,

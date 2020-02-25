@@ -9,7 +9,7 @@ from rasa_core import utils
 from rasa_core.domain import Domain
 from rasa_core.policies.policy import Policy
 from rasa_core.trackers import DialogueStateTracker
-
+from rasa_core.constants import FALLBACK_POLICY_PRIORITY
 logger = logging.getLogger(__name__)
 
 
@@ -25,7 +25,7 @@ class FallbackPolicy(Policy):
         return None
 
     def __init__(self,
-                 priority: int = 3,
+                 priority: int = FALLBACK_POLICY_PRIORITY,
                  nlu_threshold: float = 0.3,
                  core_threshold: float = 0.3,
                  fallback_action_name: Text = "action_default_fallback"

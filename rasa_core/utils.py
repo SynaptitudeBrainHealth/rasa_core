@@ -42,7 +42,7 @@ def configure_file_logging(loglevel, logfile):
     logging.captureWarnings(True)
 
 # noinspection PyUnresolvedReferences
-def class_from_module_path(module_path: Text) -> Any:
+def class_from_module_path(module_path: Text, lookup_path: Optional[Text] = None) -> Any:
     """Given the module name and path of a class, tries to retrieve the class.
 
     The loaded class can be used to instantiate new objects. """
@@ -73,6 +73,12 @@ def class_from_module_path(module_path: Text) -> Any:
         module = globals().get(module_path, locals().get(module_path))
         if module is not None:
             return module
+
+        if lookup_path:
+            # last resort: try to import the class from the lookup path
+            m = importlib.import_module(lookup_path)
+            return getattr(m, module_path)
+
         else:
             raise ImportError("Cannot retrieve class from path {}."
                               "".format(module_path))
@@ -405,6 +411,72 @@ def cap_length(s, char_limit=20, append_ellipsis=True):
     else:
         return s
 
+#This should sit in cli/utils on the next upgrade
+class bcolors:
+    HEADER = "\033[95m"
+    OKBLUE = "\033[94m"
+    OKGREEN = "\033[92m"
+    WARNING = "\033[93m"
+    FAIL = "\033[91m"
+    ENDC = "\033[0m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
+
+#This should sit in cli/utils on the next upgrade
+def wrap_with_color(*args: Any, color: Text):
+    return color + " ".join(str(s) for s in args) + bcolors.ENDC
+
+#This should sit in utils/common
+def raise_warning(
+    message: Text,
+    category: Optional[Type[Warning]] = None,
+    docs: Optional[Text] = None,
+    **kwargs: Any,
+) -> None:
+    """Emit a `warnings.warn` with sensible defaults and a colored warning msg."""
+
+    original_formatter = warnings.formatwarning
+
+    def should_show_source_line() -> bool:
+        if "stacklevel" not in kwargs:
+            if category == UserWarning or category is None:
+                return False
+            if category == FutureWarning:
+                return False
+        return True
+
+    def formatwarning(
+        message: Text,
+        category: Optional[Type[Warning]],
+        filename: Text,
+        lineno: Optional[int],
+        line: Optional[Text] = None,
+    ):
+        """Function to format a warning the standard way."""
+
+        if not should_show_source_line():
+            if docs:
+                line = f"More info at {docs}"
+            else:
+                line = ""
+
+        formatted_message = original_formatter(
+            message, category, filename, lineno, line
+        )
+        return utils.wrap_with_color(formatted_message, color=bcolors.WARNING)
+
+    if "stacklevel" not in kwargs:
+        # try to set useful defaults for the most common warning categories
+        if category == DeprecationWarning:
+            kwargs["stacklevel"] = 3
+        elif category == UserWarning:
+            kwargs["stacklevel"] = 2
+        elif category == FutureWarning:
+            kwargs["stacklevel"] = 3
+
+    warnings.formatwarning = formatwarning
+    warnings.warn(message, category=category, **kwargs)
+    warnings.formatwarning = original_formatter
 
 def bool_arg(request: Request, name: Text, default: bool = True) -> bool:
     """Return a passed boolean argument of the request or a default.
@@ -756,6 +828,22 @@ def enable_async_loop_debugging(event_loop: AbstractEventLoop
     warnings.simplefilter('always', ResourceWarning)
     return event_loop
 
+def create_directory_for_file(file_path: Text) -> None:
+    """Creates any missing parent directories of this file path."""
+
+    create_directory(os.path.dirname(file_path))
+
+def create_directory(directory_path: Text) -> None:
+    """Creates a directory and its super paths.
+
+    Succeeds even if the path already exists."""
+
+    try:
+        os.makedirs(directory_path)
+    except OSError as e:
+        # be happy if someone already created the path
+        if e.errno != errno.EEXIST:
+            raise
 
 def create_task_error_logger(error_message: Text = ""
                              ) -> Callable[[Future], None]:
