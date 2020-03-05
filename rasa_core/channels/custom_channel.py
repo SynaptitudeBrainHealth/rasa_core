@@ -25,6 +25,8 @@ logger = logging.getLogger(__name__)
 
 SLACK = False
 TWILIO = True
+
+
 class BackendInput(InputChannel):
     """A custom http input channel for accepting requests from the 
     backend and sending the response back to our primary channel 
@@ -103,14 +105,11 @@ class BackendInput(InputChannel):
 
         @custom_webhook.route("/", methods=['GET'])
         async def health(request):
-            return jsonify({"status": "ok"})
+            return response.json({"status": "ok"})
 
         @custom_webhook.route("/webhook", methods=['POST'])
         async def receive(request):
             logger.info("Hit request endpoint")
-            utc_dt=datetime.datetime.utcnow()
-            logger.info(utc_dt)
-            print(utc_dt)
             from rasa_core.channels.slack import SlackBot
             from rasa_core.channels.twilio import TwilioOutput
             sender_id = await self._extract_sender(request)
@@ -123,12 +122,12 @@ class BackendInput(InputChannel):
                     content_type='text/event-stream')
             else:
                 if SLACK:
-                    ## For using Slack as a primary channel
+                    # For using Slack as a primary channel
                     out_channel = SlackBot(self.slack_token)
                 elif TWILIO:
-                    ## For using Twilio as a primary channel
+                    # For using Twilio as a primary channel
                     out_channel = TwilioOutput(self.account_sid, self.auth_token,
-                        self.twilio_number)
+                                               self.twilio_number)
 
                 try:
                     app = request.app
@@ -136,17 +135,11 @@ class BackendInput(InputChannel):
                     utc_dt=datetime.datetime.utcnow()
                     logger.info(utc_dt)
                     app.add_task(on_new_message(UserMessage(text, out_channel, sender_id,
-                                               input_channel=self.name())))
-                    # loop = asyncio.get_event_loop()
-                    # loop.create_task(on_new_message(UserMessage(text, out_channel, sender_id,
-                    #                            input_channel=self.name())))
+                                                            input_channel=self.name())))
                 except Exception as e:
                     logger.error("Exception when trying to handle "
                                  "message.{0}".format(e))
                     logger.debug(e, exc_info=True)
-                logger.info("Returning response text")
-                utc_dt=datetime.datetime.utcnow()
-                logger.info(utc_dt) 
                 return response.text("success")
 
         return custom_webhook
