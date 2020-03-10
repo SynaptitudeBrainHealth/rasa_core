@@ -2,11 +2,16 @@ import asyncio
 import logging
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from pytz import UnknownTimeZoneError
 
 __scheduler = None
 
 logger = logging.getLogger(__name__)
+
+# jobstores = {
+#     'default': SQLAlchemyJobStore(url='sqlite:///schedule.db')
+# }
 
 
 async def scheduler() -> AsyncIOScheduler:
@@ -18,7 +23,9 @@ async def scheduler() -> AsyncIOScheduler:
 
     if not __scheduler:
         try:
+            # __scheduler = AsyncIOScheduler(jobstores=jobstores, event_loop=asyncio.get_event_loop())
             __scheduler = AsyncIOScheduler(event_loop=asyncio.get_event_loop())
+            __scheduler.add_jobstore('sqlalchemy', url='sqlite:///schedule.db')
             __scheduler.start()
             return __scheduler
         except UnknownTimeZoneError as e:
@@ -48,5 +55,6 @@ def kill_scheduler():
     global __scheduler
 
     if __scheduler:
-        __scheduler.shutdown()
-        __scheduler = None
+        # __scheduler.shutdown()
+        # __scheduler = None
+        print('sghgds')
