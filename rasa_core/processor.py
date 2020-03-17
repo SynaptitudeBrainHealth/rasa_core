@@ -196,12 +196,12 @@ class MessageProcessor(object):
                               dispatcher: Dispatcher
                               ) -> None:
         """Handle a reminder that is triggered asynchronously."""
-        # tracker = self._get_tracker(dispatcher.sender_id)
-        #
-        # if not tracker:
-        #     logger.warning("Failed to retrieve or create tracker for sender "
-        #                    "'{}'.".format(dispatcher.sender_id))
-        #     return None
+        tracker = MessageProcessor._get_tracker(dispatcher.sender_id)
+
+        if not tracker:
+            logger.warning("Failed to retrieve or create tracker for sender "
+                           "'{}'.".format(dispatcher.sender_id))
+            return None
         print('test done')
 
         # if (reminder_event.kill_on_user_message and
