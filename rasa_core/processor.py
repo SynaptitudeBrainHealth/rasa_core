@@ -202,28 +202,27 @@ class MessageProcessor(object):
             logger.warning("Failed to retrieve or create tracker for sender "
                            "'{}'.".format(dispatcher.sender_id))
             return None
-        print('test done')
 
-        # if (reminder_event.kill_on_user_message and
-        #         self._has_message_after_reminder(tracker, reminder_event) or
-        #         not self._is_reminder_still_valid(tracker, reminder_event)):
-        #     logger.debug("Canceled reminder because it is outdated. "
-        #                  "(event: {} id: {})".format(reminder_event.action_name,
-        #                                              reminder_event.name))
-        # else:
-        #     # necessary for proper featurization, otherwise the previous
-        #     # unrelated message would influence featurization
-        #     tracker.update(UserUttered.empty())
-        #     action = self._get_action(reminder_event.action_name)
-        #     should_continue = await self._run_action(action, tracker,
-        #                                              dispatcher)
-        #     if should_continue:
-        #         user_msg = UserMessage(None,
-        #                                dispatcher.output_channel,
-        #                                dispatcher.sender_id)
-        #         await self._predict_and_execute_next_action(user_msg, tracker)
-        #     # save tracker state to continue conversation from this state
-        #     self._save_tracker(tracker)
+        if (reminder_event.kill_on_user_message and
+                MessageProcessor._has_message_after_reminder(tracker, reminder_event) or
+                not MessageProcessor._is_reminder_still_valid(tracker, reminder_event)):
+            logger.debug("Canceled reminder because it is outdated. "
+                         "(event: {} id: {})".format(reminder_event.action_name,
+                                                     reminder_event.name))
+        else:
+            # necessary for proper featurization, otherwise the previous
+            # unrelated message would influence featurization
+            tracker.update(UserUttered.empty())
+            action = MessageProcessor._get_action(reminder_event.action_name)
+            should_continue = await MessageProcessor._run_action(action, tracker,
+                                                                 dispatcher)
+            if should_continue:
+                user_msg = UserMessage(None,
+                                       dispatcher.output_channel,
+                                       dispatcher.sender_id)
+                await MessageProcessor._predict_and_execute_next_action(user_msg, tracker)
+            # save tracker state to continue conversation from this state
+            MessageProcessor._save_tracker(tracker)
 
     @staticmethod
     def _log_slots(tracker):
