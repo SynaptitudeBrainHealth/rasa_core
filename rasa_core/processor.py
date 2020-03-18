@@ -343,12 +343,11 @@ class MessageProcessor(object):
         return not is_listen_action
 
     async def _schedule_reminders(self, events: List[Event],
-                                  dispatcher: Dispatcher, tracker) -> None:
+                                  dispatcher: Dispatcher, tracker, interpreter) -> None:
         """Uses the scheduler to time a job to trigger the passed reminder.
 
         Reminders with the same `id` property will overwrite one another
         (i.e. only one of them will eventually run)."""
-        interpreter = self.interpreter
         if events is not None:
             for e in events:
                 if isinstance(e, ReminderScheduled):
@@ -395,7 +394,7 @@ class MessageProcessor(object):
         self.log_bot_utterances_on_tracker(tracker, dispatcher)
 
         await self._cancel_reminders(events, tracker)
-        await self._schedule_reminders(events, dispatcher, tracker)
+        await self._schedule_reminders(events, dispatcher, tracker, self.interpreter)
 
         return self.should_predict_another_action(action.name(), events)
 
