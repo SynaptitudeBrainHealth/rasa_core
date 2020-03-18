@@ -363,7 +363,7 @@ class MessageProcessor(object):
                               self.policy_ensemble,
                               self.domain,
                               self.tracker_store,
-                              self.generator,
+                              self.nlg,
                               self.action_endpoint,
                               self.max_number_of_predictions,
                               self.message_preprocessor,
