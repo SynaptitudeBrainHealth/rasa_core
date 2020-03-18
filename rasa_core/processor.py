@@ -193,10 +193,28 @@ class MessageProcessor(object):
 
     @staticmethod
     async def handle_reminder(reminder_event: ReminderScheduled,
-                              dispatcher: Dispatcher
+                              dispatcher: Dispatcher,
+                              interpreter,
+                              policy_ensemble,
+                              domain,
+                              tracker_store,
+                              generator,
+                              action_endpoint,
+                              max_number_of_predictions,
+                              message_preprocessor,
+                              on_circuit_break
                               ) -> None:
         """Handle a reminder that is triggered asynchronously."""
-        tracker = MessageProcessor._get_tracker(dispatcher.sender_id)
+        instance = MessageProcessor(interpreter,
+                              policy_ensemble,
+                              domain,
+                              tracker_store,
+                              generator,
+                              action_endpoint,
+                              max_number_of_predictions,
+                              message_preprocessor,
+                              on_circuit_break)
+        tracker = MessageProcessor._get_tracker(instance, dispatcher.sender_id)
 
         if not tracker:
             logger.warning("Failed to retrieve or create tracker for sender "
@@ -213,16 +231,16 @@ class MessageProcessor(object):
             # necessary for proper featurization, otherwise the previous
             # unrelated message would influence featurization
             tracker.update(UserUttered.empty())
-            action = MessageProcessor._get_action(reminder_event.action_name)
-            should_continue = await MessageProcessor._run_action(action, tracker,
+            action = MessageProcessor._get_action(instance, reminder_event.action_name)
+            should_continue = await MessageProcessor._run_action(instance, action, tracker,
                                                                  dispatcher)
             if should_continue:
                 user_msg = UserMessage(None,
                                        dispatcher.output_channel,
                                        dispatcher.sender_id)
-                await MessageProcessor._predict_and_execute_next_action(user_msg, tracker)
+                await MessageProcessor._predict_and_execute_next_action(instance, user_msg, tracker)
             # save tracker state to continue conversation from this state
-            MessageProcessor._save_tracker(tracker)
+            MessageProcessor._save_tracker(instance, tracker)
 
     @staticmethod
     def _log_slots(tracker):
@@ -340,7 +358,16 @@ class MessageProcessor(object):
                     (await jobs.scheduler()).add_job(
                         self.handle_reminder, "date",
                         run_date=e.trigger_date_time,
-                        args=(e, dispatcher),
+                        args=(e, dispatcher,
+                              self.interpreter,
+                              self.policy_ensemble,
+                              self.domain,
+                              self.tracker_store,
+                              self.generator,
+                              self.action_endpoint,
+                              self.max_number_of_predictions,
+                              self.message_preprocessor,
+                              self.on_circuit_break),
                         id=e.name,
                         replace_existing=True,
                         name=str(e.action_name) + "__sender_id:" + tracker.sender_id)
