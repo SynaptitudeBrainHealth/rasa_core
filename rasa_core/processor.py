@@ -209,9 +209,7 @@ class MessageProcessor(object):
                               tracker_store,
                               generator,
                               action_endpoint,
-                              max_number_of_predictions,
-                              message_preprocessor,
-                              on_circuit_break)
+                              message_preprocessor)
         tracker = MessageProcessor._get_tracker(instance, dispatcher.sender_id)
 
         if not tracker:
@@ -350,13 +348,14 @@ class MessageProcessor(object):
 
         Reminders with the same `id` property will overwrite one another
         (i.e. only one of them will eventually run)."""
+        interpreter = self.interpreter
         if events is not None:
             for e in events:
                 if isinstance(e, ReminderScheduled):
                     (await jobs.scheduler()).add_job(
                         self.handle_reminder, "date",
                         run_date=e.trigger_date_time,
-                        args=(e, dispatcher),
+                        args=(e, dispatcher, interpreter),
                         id=e.name,
                         replace_existing=True,
                         name=str(e.action_name) + "__sender_id:" + tracker.sender_id)
