@@ -201,6 +201,7 @@ class MessageProcessor(object):
                               generator=None,
                               action_endpoint=None,
                               message_preprocessor=None,
+                              max_number_of_predictions: int = 10
                               ) -> None:
         """Handle a reminder that is triggered asynchronously."""
         instance = MessageProcessor(interpreter,
@@ -209,6 +210,7 @@ class MessageProcessor(object):
                               tracker_store,
                               generator,
                               action_endpoint,
+                                max_number_of_predictions,
                               message_preprocessor)
         tracker = MessageProcessor._get_tracker(instance, dispatcher.sender_id)
 
@@ -343,18 +345,26 @@ class MessageProcessor(object):
         return not is_listen_action
 
     async def _schedule_reminders(self, events: List[Event],
-                                  dispatcher: Dispatcher, tracker, interpreter) -> None:
+                                  dispatcher: Dispatcher, tracker) -> None:
         """Uses the scheduler to time a job to trigger the passed reminder.
 
         Reminders with the same `id` property will overwrite one another
         (i.e. only one of them will eventually run)."""
+        instance = MessageProcessor(self.interpreter,
+                                    self.policy_ensemble,
+                                    self.domain,
+                                    self.tracker_store,
+                                    self.nlg,
+                                    self.action_endpoint,
+                                    self.max_number_of_predictions,
+                                    self.message_preprocessor)
         if events is not None:
             for e in events:
                 if isinstance(e, ReminderScheduled):
                     (await jobs.scheduler()).add_job(
                         self.handle_reminder, "date",
                         run_date=e.trigger_date_time,
-                        args=(e, dispatcher, interpreter),
+                        args=(e, dispatcher, instance.interpreter),
                         id=e.name,
                         replace_existing=True,
                         name=str(e.action_name) + "__sender_id:" + tracker.sender_id)
@@ -394,7 +404,7 @@ class MessageProcessor(object):
         self.log_bot_utterances_on_tracker(tracker, dispatcher)
 
         await self._cancel_reminders(events, tracker)
-        await self._schedule_reminders(events, dispatcher, tracker, self.interpreter)
+        await self._schedule_reminders(events, dispatcher, tracker)
 
         return self.should_predict_another_action(action.name(), events)
 
