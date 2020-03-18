@@ -194,15 +194,13 @@ class MessageProcessor(object):
     @staticmethod
     async def handle_reminder(reminder_event: ReminderScheduled,
                               dispatcher: Dispatcher,
-                              interpreter,
-                              policy_ensemble,
-                              domain,
-                              tracker_store,
-                              generator,
-                              action_endpoint,
-                              max_number_of_predictions,
-                              message_preprocessor,
-                              on_circuit_break
+                              interpreter=None,
+                              policy_ensemble=None,
+                              domain=None,
+                              tracker_store=None,
+                              generator=None,
+                              action_endpoint=None,
+                              message_preprocessor=None,
                               ) -> None:
         """Handle a reminder that is triggered asynchronously."""
         instance = MessageProcessor(interpreter,
@@ -358,16 +356,7 @@ class MessageProcessor(object):
                     (await jobs.scheduler()).add_job(
                         self.handle_reminder, "date",
                         run_date=e.trigger_date_time,
-                        args=(e, dispatcher,
-                              self.interpreter,
-                              self.policy_ensemble,
-                              self.domain,
-                              self.tracker_store,
-                              self.nlg,
-                              self.action_endpoint,
-                              self.max_number_of_predictions,
-                              self.message_preprocessor,
-                              self.on_circuit_break),
+                        args=(e, dispatcher),
                         id=e.name,
                         replace_existing=True,
                         name=str(e.action_name) + "__sender_id:" + tracker.sender_id)
