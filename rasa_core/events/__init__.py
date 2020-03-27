@@ -1043,3 +1043,44 @@ class AllEventsReset(Event):
         evts = deserialise_events(self.evts)
         for e in evts:
             tracker.events.append(e)
+
+
+class DeleteEvents(Event):
+    """Action restart is appended to the tracker events to reset the conversation.
+    To delete certain number of events from tracker and update tracker."""
+
+    type_name = "delete_events"
+
+    def __init__(self, evts, num_events, timestamp=None):
+        self.evts = evts
+        self.num_events = num_events
+        super(DeleteEvents, self).__init__(timestamp)
+
+    def __hash__(self):
+        return hash(32143124314)
+
+    def __eq__(self, other):
+        if not isinstance(other, DeleteEvents):
+            return False
+        else:
+            return self.evts == other.evts
+
+    def __str__(self):
+        return "DeleteEvents(evts: {}, num_events: {})".format(self.evts, self.num_events)
+
+    def as_story_string(self):
+        props = json.dumps({"evts": self.evts, "num_events": self.num_events})
+        return "{name}{props}".format(name=self.type_name, props=props)
+
+    @classmethod
+    def _from_parameters(cls, parameters):
+        return DeleteEvents(parameters.get("evts"),
+                            parameters.get("num_events"),
+                            parameters.get("timestamp"))
+
+    def apply_to(self, tracker):
+        tracker._reset()
+        del self.evts[-self.num_events:]
+        evts = deserialise_events(self.evts)
+        for e in evts:
+            tracker.events.append(e)
