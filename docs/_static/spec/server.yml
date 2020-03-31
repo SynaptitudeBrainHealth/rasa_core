@@ -481,6 +481,37 @@ paths:
         403:
           $ref: '#/components/responses/403Permissions'
   /conversations/{sender_id}/messages:
+    get:
+      security:
+        - TokenAuth: []
+        - JWT: []
+      tags:
+        - Tracker
+      summary: Retrieve all the conversation messages
+      description: >-
+        The conversation messages include events
+        for user and bot utterances.
+      operationId: getMessages
+      parameters:
+        - $ref: '#/components/parameters/senderId'
+      responses:
+        200:
+          $ref: '#/components/responses/200Messages'
+        403:
+          $ref: '#/components/responses/403Permissions'
+        503:
+          description: Tracker store is unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                version: "0.12.0"
+                status: "failure"
+                message: >-
+                  No tracker store available.
+                reason: "NoTrackerStore"
+                code: 503
     post:
       security:
       - TokenAuth: []
@@ -1649,3 +1680,12 @@ components:
         properties:
           use_entities:
             type: boolean
+    200Messages:
+      type: object
+      description: Conversation messages comprising of user and bot events.
+      properties:
+        events:
+          type: array
+          description: User and Bot events history
+          items:
+            $ref: '#/components/schemas/Event'
