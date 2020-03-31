@@ -579,7 +579,6 @@ class ReminderCancelled(Event):
             name: name of the scheduled action to be cancelled
         """
         logger.info("cancel reminder event")
-        logger.info("name :{}".format(name))
         self.name = name
         super(ReminderCancelled, self).__init__(timestamp)
 
@@ -1052,6 +1051,51 @@ class AllEventsReset(Event):
         return d
 
     def apply_to(self, tracker):
+        evts = deserialise_events(self.evts)
+        for e in evts:
+            tracker.events.append(e)
+
+
+class DeleteEvents(Event):
+    """Action restart is appended to the tracker events to reset the conversation.
+    If you want to keep the slots set and only want to reset the
+    conversation history, you can use this event to reset the events by adding restart action."""
+
+    type_name = "delete_events"
+
+    def __init__(self, evts, timestamp=None):
+        self.evts = evts
+        super(DeleteEvents, self).__init__(timestamp)
+
+    def __hash__(self):
+        return hash(32143124314)
+
+    def __eq__(self, other):
+        if not isinstance(other, DeleteEvents):
+            return False
+        else:
+            return self.evts == other.evts
+
+    def __str__(self):
+        return "DeleteEvents(evts: {})".format(self.evts)
+
+    def as_story_string(self):
+        props = json.dumps({"evts": self.evts})
+        return "{name}{props}".format(name=self.type_name, props=props)
+
+    @classmethod
+    def _from_parameters(cls, parameters):
+        return DeleteEvents(parameters.get("evts"),
+                            parameters.get("timestamp"))
+
+    def as_dict(self):
+        d = super(DeleteEvents, self).as_dict()
+        d.update({"evts": self.evts})
+        return d
+
+    def apply_to(self, tracker):
+        tracker._reset()
+        tracker.events = []
         evts = deserialise_events(self.evts)
         for e in evts:
             tracker.events.append(e)
