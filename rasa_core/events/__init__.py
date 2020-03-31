@@ -579,17 +579,23 @@ class ReminderCancelled(Event):
             name: name of the scheduled action to be cancelled
         """
         logger.info("cancel reminder event")
+        logger.info("name :{}".format(name))
         self.name = name
         super(ReminderCancelled, self).__init__(timestamp)
 
     def __hash__(self):
-        return hash((self.name))
+        return hash(self.name)
 
     def __eq__(self, other):
         return isinstance(other, ReminderCancelled)
 
     def __str__(self):
         return "ReminderCancelled(name: {})".format(self.name)
+
+    def as_dict(self):
+        d = super(ReminderCancelled, self).as_dict()
+        d.update({"name": self.name})
+        return d
 
     def as_story_string(self):
         return self.type_name
