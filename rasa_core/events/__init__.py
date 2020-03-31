@@ -1045,7 +1045,12 @@ class AllEventsReset(Event):
     def _from_parameters(cls, parameters):
         return AllEventsReset(parameters.get("evts"),
                         parameters.get("timestamp"))
-            
+
+    def as_dict(self):
+        d = super(AllEventsReset, self).as_dict()
+        d.update({"evts": self.evts})
+        return d
+
     def apply_to(self, tracker):
         evts = deserialise_events(self.evts)
         for e in evts:
