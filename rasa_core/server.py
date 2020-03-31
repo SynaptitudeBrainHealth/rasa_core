@@ -822,10 +822,10 @@ def create_app(agent=None,
         logger.debug("Successfully loaded model '{}'.".format(model_path))
         return response.json(None, status=204)
 
-    @app.get("/conversations/<sender_id>/history")
+    @app.get("/conversations/<sender_id>/messages")
     @requires_auth(app, auth_token)
-    async def retrieve_conversation_history(request: Request, sender_id: Text):
-        """Get a dump of a conversation's tracker including its events."""
+    async def retrieve_conversation_messages(request: Request, sender_id: Text):
+        """Get only actual conversation messages ('user' and 'bot' events) from tracker."""
 
         if not app.agent.tracker_store:
             raise ErrorResponse(503, "NoTrackerStore",
@@ -847,10 +847,24 @@ def create_app(agent=None,
                                 "Could not retrieve tracker. Most likely "
                                 "because there is no domain set on the agent.")
 
-        # dump and return tracker
-
+        # get current state of a tracker and then extract events from it
         state = tracker.current_state(verbosity)
-        return response.json({"events": state["events"]})
+        all_events = state["events"]
+
+        # retrieve only 'user' and 'bot' events from the complete list of events
+        user_bot_kv_list = ["user", "bot"]
+        all_user_bot_events = [e for e in all_events if e["event"] in user_bot_kv_list]
+
+        # retrieve only 'events', 'timestamp' and 'text' part of the 'user' and 'bot' events
+        user_bot_keys_list = ["event", "timestamp", "text"]
+        user_bot_events = [dict((key, value) for key, value in a.items() if key in user_bot_keys_list)
+                           for a in all_user_bot_events]
+
+        # get rid of the event dictionaries where 'text' part is None (null)
+        user_bot_events_final = [e for e in user_bot_events if e["text"]]
+
+        # send the list of final events as a response
+        return response.json({"events": user_bot_events_final})
 
     return app
 
