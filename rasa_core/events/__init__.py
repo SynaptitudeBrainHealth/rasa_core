@@ -1056,22 +1056,21 @@ class AllEventsReset(Event):
             tracker.events.append(e)
 
 
-class DeleteEvents(Event):
-    """Action restart is appended to the tracker events to reset the conversation.
-    If you want to keep the slots set and only want to reset the
-    conversation history, you can use this event to reset the events by adding restart action."""
+class DeleteUpdateEvents(Event):
+    """Action to reset tracker including tracker events.
+    Then update tracker events."""
 
-    type_name = "delete_events"
+    type_name = "delete_update_events"
 
     def __init__(self, evts, timestamp=None):
         self.evts = evts
-        super(DeleteEvents, self).__init__(timestamp)
+        super(DeleteUpdateEvents, self).__init__(timestamp)
 
     def __hash__(self):
         return hash(32143124314)
 
     def __eq__(self, other):
-        if not isinstance(other, DeleteEvents):
+        if not isinstance(other, DeleteUpdateEvents):
             return False
         else:
             return self.evts == other.evts
@@ -1085,11 +1084,11 @@ class DeleteEvents(Event):
 
     @classmethod
     def _from_parameters(cls, parameters):
-        return DeleteEvents(parameters.get("evts"),
-                            parameters.get("timestamp"))
+        return DeleteUpdateEvents(parameters.get("evts"),
+                                  parameters.get("timestamp"))
 
     def as_dict(self):
-        d = super(DeleteEvents, self).as_dict()
+        d = super(DeleteUpdateEvents, self).as_dict()
         d.update({"evts": self.evts})
         return d
 

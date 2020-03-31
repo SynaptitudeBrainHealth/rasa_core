@@ -822,7 +822,38 @@ def create_app(agent=None,
         logger.debug("Successfully loaded model '{}'.".format(model_path))
         return response.json(None, status=204)
 
+    @app.get("/conversations/<sender_id>/history")
+    @requires_auth(app, auth_token)
+    async def retrieve_conversation_history(request: Request, sender_id: Text):
+        """Get a dump of a conversation's tracker including its events."""
+
+        if not app.agent.tracker_store:
+            raise ErrorResponse(503, "NoTrackerStore",
+                                "No tracker store available. Make sure to "
+                                "configure a tracker store when starting "
+                                "the server.")
+
+        # parameters
+        default_verbosity = EventVerbosity.ALL
+
+        verbosity = event_verbosity_parameter(request,
+                                              default_verbosity)
+
+        # retrieve tracker and set to requested state
+        tracker = app.agent.tracker_store.get_or_create_tracker(sender_id)
+        if not tracker:
+            raise ErrorResponse(503,
+                                "NoDomain",
+                                "Could not retrieve tracker. Most likely "
+                                "because there is no domain set on the agent.")
+
+        # dump and return tracker
+
+        state = tracker.current_state(verbosity)
+        return response.json({"events": state["events"]})
+
     return app
+
 
 def _get_output_channel(
     request: Request, tracker: Optional[DialogueStateTracker]
