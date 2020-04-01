@@ -1686,6 +1686,17 @@ components:
       properties:
         events:
           type: array
-          description: User and Bot events history
+          description: Conversation events history
           items:
-            $ref: '#/components/schemas/Event'
+            type: object
+            properties:
+              author:
+                type: string
+                description: Event/author name (user or bot)
+              timestamp:
+                type: integer
+                description: Time of application
+              text:
+                type: string
+                description: Content of text message
+            required: ["author"]
