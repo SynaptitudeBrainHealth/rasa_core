@@ -580,15 +580,21 @@ class ReminderCancelled(Event):
         """
         logger.info("cancel reminder event")
         self.name = name
+        super(ReminderCancelled, self).__init__(timestamp)
 
     def __hash__(self):
-        return hash((self.name))
+        return hash(self.name)
 
     def __eq__(self, other):
         return isinstance(other, ReminderCancelled)
 
     def __str__(self):
-        return ("ReminderCancelled(name: {})".format(self.name))
+        return "ReminderCancelled(name: {})".format(self.name)
+
+    def as_dict(self):
+        d = super(ReminderCancelled, self).as_dict()
+        d.update({"name": self.name})
+        return d
 
     def as_story_string(self):
         return self.type_name
@@ -1019,7 +1025,7 @@ class AllEventsReset(Event):
         super(AllEventsReset, self).__init__(timestamp)
 
     def __hash__(self):
-        return hash(32143124314)
+        return hash(32143124320)
 
     def __eq__(self, other):
         if not isinstance(other, AllEventsReset):
@@ -1038,8 +1044,57 @@ class AllEventsReset(Event):
     def _from_parameters(cls, parameters):
         return AllEventsReset(parameters.get("evts"),
                         parameters.get("timestamp"))
-            
+
+    def as_dict(self):
+        d = super(AllEventsReset, self).as_dict()
+        d.update({"evts": self.evts})
+        return d
+
     def apply_to(self, tracker):
+        evts = deserialise_events(self.evts)
+        for e in evts:
+            tracker.events.append(e)
+
+
+class DeleteUpdateEvents(Event):
+    """Action to reset tracker including tracker events.
+    Then update tracker events."""
+
+    type_name = "delete_update_events"
+
+    def __init__(self, evts, timestamp=None):
+        self.evts = evts
+        super(DeleteUpdateEvents, self).__init__(timestamp)
+
+    def __hash__(self):
+        return hash(32143124321)
+
+    def __eq__(self, other):
+        if not isinstance(other, DeleteUpdateEvents):
+            return False
+        else:
+            return self.evts == other.evts
+
+    def __str__(self):
+        return "DeleteEvents(evts: {})".format(self.evts)
+
+    def as_story_string(self):
+        props = json.dumps({"evts": self.evts})
+        return "{name}{props}".format(name=self.type_name, props=props)
+
+    @classmethod
+    def _from_parameters(cls, parameters):
+        return DeleteUpdateEvents(parameters.get("evts"),
+                                  parameters.get("timestamp"))
+
+    def as_dict(self):
+        d = super(DeleteUpdateEvents, self).as_dict()
+        d.update({"evts": self.evts})
+        return d
+
+    def apply_to(self, tracker):
+        tracker._reset()
+        tracker.events = []
         evts = deserialise_events(self.evts)
         for e in evts:
             tracker.events.append(e)
