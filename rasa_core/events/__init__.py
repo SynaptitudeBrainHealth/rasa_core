@@ -1025,7 +1025,7 @@ class AllEventsReset(Event):
         super(AllEventsReset, self).__init__(timestamp)
 
     def __hash__(self):
-        return hash(32143124314)
+        return hash(32143124320)
 
     def __eq__(self, other):
         if not isinstance(other, AllEventsReset):
@@ -1067,7 +1067,7 @@ class DeleteUpdateEvents(Event):
         super(DeleteUpdateEvents, self).__init__(timestamp)
 
     def __hash__(self):
-        return hash(32143124314)
+        return hash(32143124321)
 
     def __eq__(self, other):
         if not isinstance(other, DeleteUpdateEvents):

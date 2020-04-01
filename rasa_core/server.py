@@ -857,7 +857,7 @@ def create_app(agent=None,
 
         # retrieve only 'events', 'timestamp' and 'text' part of the 'user' and 'bot' events
         user_bot_keys_list = ["event", "timestamp", "text"]
-        user_bot_events = [dict((key, value) for key, value in a.items() if key in user_bot_keys_list)
+        user_bot_events = [dict((set_key_value(key), value) for key, value in a.items() if key in user_bot_keys_list)
                            for a in all_user_bot_events]
 
         # get rid of the event dictionaries where 'text' part is None (null)
@@ -867,6 +867,13 @@ def create_app(agent=None,
         return response.json({"events": user_bot_events_final})
 
     return app
+
+
+def set_key_value(key):
+    if key == "event":
+        return "author"
+    else:
+        return key
 
 
 def _get_output_channel(
