@@ -887,7 +887,7 @@ def create_app(agent=None,
         confidence = request_params.get("confidence", None)
         verbosity = event_verbosity_parameter(request,
                                               EventVerbosity.AFTER_RESTART)
-        # dict of responses
+        # dict of responses that will store all the ids that were updated as keys
         responses = {}
         # Retrieve ids from tracker_store
         ids = retrieve_keys(app)
@@ -895,6 +895,7 @@ def create_app(agent=None,
         for id in ids:
             tracker = app.agent.tracker_store.get_or_create_tracker(id)
             id_state = tracker.current_state(verbosity)
+            # check if the last event was made within the last 86400secs (24h)
             current_time = datetime.datetime.utcnow()
             last_event_ts_from_id = datetime.datetime.utcfromtimestamp(id_state["latest_event_time"])
             secondsinaday = 86400
@@ -907,7 +908,7 @@ def create_app(agent=None,
                                                 output_channel,
                                                 policy,
                                                 confidence)
-
+                    # add id to result
                     responses[id] = "Action trigger sent"
 
                 except ValueError as e:
