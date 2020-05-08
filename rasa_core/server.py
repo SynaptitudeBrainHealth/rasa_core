@@ -874,7 +874,7 @@ def create_app(agent=None,
     @ensure_loaded_agent(app)
     async def trigger_action_if_lastevent_24h(request: Request):
         """ Get the last event timestamp from a list of ids
-        and trigger an action if the last event was made more than a day ago
+        and trigger an action if their last event was made more than a day ago
 
         Returns
             responses: A jsonify dict of sender_ids on which the action trigger were call to
