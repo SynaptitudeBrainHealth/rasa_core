@@ -897,7 +897,7 @@ def create_app(agent=None,
             id_state = tracker.current_state(verbosity)
             current_time = datetime.datetime.utcnow()
             last_event_ts_from_id = datetime.datetime.utcfromtimestamp(id_state["latest_event_time"])
-            secondsinaday = 8
+            secondsinaday = 86400
             if compare_utcdatetime_with_gap(current_time, last_event_ts_from_id, secondsinaday):
                 try:
                     output_channel = _get_output_channel(request, tracker)
