@@ -923,15 +923,15 @@ def create_app(agent=None,
         return response.json(responses)
 
 def retrieve_keys(app):
-        """ Retrieves the list of keys of the tracker store
+    """ Retrieves the list of keys of the tracker store
 
-        Returns:
-            list -- tracker_store list of keys
-        """
-        keys = []
-        if app.agent.tracker_store:
-            keys = list(app.agent.tracker_store.keys())
-        return keys
+    Returns:
+        list -- tracker_store list of keys
+    """
+    keys = []
+    if app.agent.tracker_store:
+        keys = list(app.agent.tracker_store.keys())
+    return keys
 
 def compare_utcdatetime_with_gap(dt_a, dt_b, gap):
     """Check the gap between two datetimes
