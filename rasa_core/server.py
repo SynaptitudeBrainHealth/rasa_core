@@ -508,6 +508,38 @@ def create_app(agent=None,
             logger.exception("Caught an exception while logging message.")
             raise ErrorResponse(500, "MessageException",
                                 "Server failure. Error: {}".format(e))
+ 
+    @app.route("/conversations/<sender_id>/delete", methods=["DELETE"])
+    @requires_auth(app, auth_token)
+    async def delete_conversation(request: Request, sender_id: Text):
+        """ Delete conversation from an user within the tracker_store.
+
+        Arguments:
+            sender_id {Text} -- The user identification to delete conversation from
+
+        Returns:
+            responses -- Jsonify confirmation that user has been deleted.
+        """
+
+        if not app.agent.tracker_store:
+            raise ErrorResponse(503, "NoTrackerStore",
+                                "No tracker store available. Make sure to "
+                                "configure a tracker store when starting "
+                                "the server.")
+
+        # retrieve tracker and set to requested state
+        tracker = app.agent.tracker_store.get_or_create_tracker(sender_id)
+        if not tracker:
+            raise ErrorResponse(503,
+                                "NoDomain",
+                                "Could not retrieve tracker. Most likely "
+                                "because there is no domain set on the agent.")
+
+        # delete id from tracker
+        tracker.delete(sender_id)
+
+        # send confirmation of deletion as a response
+        return response.json({sender_id: "User was successfully deleted from tracker."})
 
     @app.post("/model")
     @requires_auth(app, auth_token)

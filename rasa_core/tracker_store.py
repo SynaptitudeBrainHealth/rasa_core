@@ -173,6 +173,9 @@ class RedisTrackerStore(TrackerStore):
 
         serialised_tracker = self.serialise_tracker(tracker)
         self.red.set(tracker.sender_id, serialised_tracker, ex=timeout)
+    
+    def delete(self, sender_id):
+        self.red.delete(sender_id)
 
     def retrieve(self, sender_id):
         stored = self.red.get(sender_id)
