@@ -869,7 +869,7 @@ def create_app(agent=None,
 
     return app
 
-    @app.route("/conversations/trigger_action_to_ids_24h", methods=['POST'])
+    @app.route("/conversations/resume-dead-conversations", methods=['POST'])
     @requires_auth(app, auth_token)
     @ensure_loaded_agent(app)
     async def trigger_action_if_lastevent_24h(request: Request):
@@ -891,15 +891,15 @@ def create_app(agent=None,
         responses = {}
         # Retrieve ids from tracker_store
         ids = retrieve_keys(app)
+        current_time = datetime.datetime.utcnow()
         # For each ids, trigger an action if it was stalled for more than a day 
         for id in ids:
             tracker = app.agent.tracker_store.get_or_create_tracker(id)
             id_state = tracker.current_state(verbosity)
             # check if the last event was made within the last 86400secs (24h)
-            current_time = datetime.datetime.utcnow()
             last_event_ts_from_id = datetime.datetime.utcfromtimestamp(id_state["latest_event_time"])
-            secondsinaday = 86400
-            if compare_utcdatetime_with_gap(current_time, last_event_ts_from_id, secondsinaday):
+            seconds_in_a_day = 86400
+            if compare_utcdatetime_with_gap(current_time, last_event_ts_from_id, seconds_in_a_day):
                 try:
                     output_channel = _get_output_channel(request, tracker)
                     logger.info('output_channel: {}'.format(output_channel))
@@ -934,8 +934,8 @@ def retrieve_keys(app):
         keys = list(app.agent.tracker_store.keys())
     return keys
 
-def compare_utcdatetime_with_gap(dt_a, dt_b, gap):
-    """Check the gap between two datetimes
+def compare_utcdatetime_with_timegap(dt_a, dt_b, gap):
+    """Check the timegap between two datetimes
 
     Arguments:
         dt_a {UTCdatetime} -- Time A to compared
