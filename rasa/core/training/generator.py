@@ -381,7 +381,7 @@ class TrainingDataGenerator(object):
         self._issue_unused_checkpoint_notification(previous_unused)
         logger.debug("Found {} training trackers.".format(len(finished_trackers)))
 
-        disable_subsampling = True
+        disable_subsampling = False
         if disable_subsampling:
             '''
             Synaptitude Note : Subsampling somehow seems to affect our
