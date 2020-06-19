@@ -381,24 +381,27 @@ class TrainingDataGenerator(object):
         self._issue_unused_checkpoint_notification(previous_unused)
         logger.debug("Found {} training trackers.".format(len(finished_trackers)))
 
-        if self.config.augmentation_factor > 0:
-            augmented_trackers, original_trackers = [], []
-            for t in finished_trackers:
-                if t.is_augmented:
-                    augmented_trackers.append(t)
-                else:
-                    original_trackers.append(t)
-            augmented_trackers = self._subsample_trackers(
-                augmented_trackers, self.config.max_number_of_augmented_trackers
-            )
-            logger.debug(
-                "Subsampled to {} augmented training trackers."
-                "".format(len(augmented_trackers))
-            )
-            logger.debug(
-                "There are {} original trackers.".format(len(original_trackers))
-            )
-            finished_trackers = original_trackers + augmented_trackers
+        disable_subsampling = True
+        if disable_subsampling:
+            '''
+            Synaptitude Note : Subsampling somehow seems to affect our
+            training so we are disabling it for now
+            '''
+            if self.config.augmentation_factor > 0:
+                augmented_trackers, original_trackers = [], []
+                for t in finished_trackers:
+                    if t.is_augmented:
+                        augmented_trackers.append(t)
+                    else:
+                        original_trackers.append(t)
+                augmented_trackers = self._subsample_trackers(
+                    augmented_trackers,
+                    self.config.max_number_of_augmented_trackers)
+                logger.debug("Subsampled to {} augmented training trackers."
+                             "".format(len(augmented_trackers)))
+                logger.debug("There are {} original trackers."
+                             "".format(len(original_trackers)))
+                finished_trackers = original_trackers + augmented_trackers
 
         return finished_trackers
 

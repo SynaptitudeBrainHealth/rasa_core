@@ -255,6 +255,8 @@ class SlackInput(InputChannel):
         """
         retry_reason = request.headers.get("HTTP_X_SLACK_RETRY_REASON")
         retry_count = request.headers.get("HTTP_X_SLACK_RETRY_NUM")
+        logger.info("retry_reason : {}".format(retry_reason))
+        logger.info("retry_count: {}".format(retry_count))
         if retry_count and retry_reason in self.errors_ignore_retry:
             logger.warning(
                 "Received retry #{} request from slack"
@@ -264,17 +266,18 @@ class SlackInput(InputChannel):
             return response.text(None, status=201, headers={"X-Slack-No-Retry": 1})
 
         try:
+            app = request.app
             out_channel = SlackBot(self.slack_token, self.slack_channel)
             user_msg = UserMessage(
                 text, out_channel, sender_id, input_channel=self.name()
             )
 
-            await on_new_message(user_msg)
+            app.add_task(on_new_message(user_msg))
         except Exception as e:
             logger.error("Exception when trying to handle message.{0}".format(e))
             logger.error(str(e), exc_info=True)
 
-        return response.text("")
+        return response.text("success")
 
     def blueprint(self, on_new_message):
         slack_webhook = Blueprint("slack_webhook", __name__)
