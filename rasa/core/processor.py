@@ -453,8 +453,8 @@ class MessageProcessor(object):
             self._log_slots(tracker)
 
         await self._send_bot_messages(events, tracker, output_channel)
-        await self._schedule_reminders(events, tracker, output_channel, nlg)
         await self._cancel_reminders(events, tracker)
+        await self._schedule_reminders(events, tracker, output_channel, nlg)
 
         return self.should_predict_another_action(action.name(), events)
 
