@@ -1064,3 +1064,41 @@ class ActionExecutionRejected(Event):
 
     def apply_to(self, tracker: "DialogueStateTracker") -> None:
         tracker.reject_action(self.action_name)
+
+
+class AllEventsReset(Event):
+    """Action restart is appended to the tracker events to reset the conversation.
+    If you want to keep the slots set and only want to reset the
+    conversation history, you can use this event to reset the events by adding restart action."""
+
+    type_name = "reset_events"
+
+    def __init__(self, evts, timestamp=None):
+        self.evts = evts
+        super(AllEventsReset, self).__init__(timestamp)
+
+    def __hash__(self):
+        return hash(32143124314)
+
+    def __eq__(self, other):
+        if not isinstance(other, AllEventsReset):
+            return False
+        else:
+            return self.evts == other.evts
+
+    def __str__(self):
+        return "AllEventsReset(evts: {})".format(self.evts)
+
+    def as_story_string(self):
+        props = json.dumps({"evts": self.evts})
+        return "{name}{props}".format(name=self.type_name, props=props)
+
+    @classmethod
+    def _from_parameters(cls, parameters):
+        return AllEventsReset(parameters.get("evts"),
+                        parameters.get("timestamp"))
+            
+    def apply_to(self, tracker):
+        evts = deserialise_events(self.evts)
+        for e in evts:
+            tracker.events.append(e)
