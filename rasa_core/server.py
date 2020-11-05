@@ -904,7 +904,7 @@ def create_app(agent=None,
     @app.route("/conversations/resume-dead-conversations", methods=['POST'])
     @requires_auth(app, auth_token)
     @ensure_loaded_agent(app)
-    async def trigger_action_if_lastevent_24h(request: Request):
+    async def trigger_resume_inactive_conv(request: Request):
         """ Get the last event timestamp from a list of ids
         and trigger an action if their last event was made more than a day ago
 
@@ -917,8 +917,10 @@ def create_app(agent=None,
                              request_params.get("action"))
         policy = request_params.get("policy", None)
         confidence = request_params.get("confidence", None)
+        force_update = request_params.get("force_update", False)
         verbosity = event_verbosity_parameter(request,
-                                              EventVerbosity.AFTER_RESTART)
+                                              EventVerbosity.AFTER_RESTART if not force_update
+                                                                           else EventVerbosity.APPLIED)
         # dict of responses that will store all the ids that were updated as keys
         responses = {}
         # Retrieve ids from tracker_store
@@ -931,15 +933,15 @@ def create_app(agent=None,
             # check if the last event was made within the last 86400secs (24h)
             last_event_ts_from_id = datetime.datetime.utcfromtimestamp(id_state["latest_event_time"])
             seconds_in_a_day = 86400
-            if compare_utcdatetime_with_gap(current_time, last_event_ts_from_id, seconds_in_a_day):
+            if force_update or compare_utcdatetime_with_gap(current_time, last_event_ts_from_id, seconds_in_a_day):
                 try:
                     output_channel = _get_output_channel(request, tracker)
                     logger.info('output_channel: {}'.format(output_channel))
                     await app.agent.execute_action(id,
-                                                action_to_execute,
-                                                output_channel,
-                                                policy,
-                                                confidence)
+                                                   action_to_execute,
+                                                   output_channel,
+                                                   policy,
+                                                   confidence)
                     # add id to result
                     responses[id] = "Action trigger sent"
 
