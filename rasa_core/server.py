@@ -949,9 +949,9 @@ def create_app(agent=None,
                     raise ErrorResponse(400, "ValueError", e)
                 except Exception as e:
                     logger.error("Encountered an exception while running action '{}'. "
-                                "Bot will continue, but the actions events are lost. "
-                                "Make sure to fix the exception in your custom "
-                                "code.".format(action_to_execute))
+                                 "Bot will continue, but the actions events are lost. "
+                                 "Make sure to fix the exception in your custom "
+                                 "code.".format(action_to_execute))
                     logger.debug(e, exc_info=True)
                     raise ErrorResponse(500, "ValueError",
                                         "Server failure. Error: {}".format(e))
