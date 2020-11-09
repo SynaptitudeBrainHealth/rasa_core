@@ -354,7 +354,7 @@ def create_app(agent=None,
             keys = []
 
         return response.json(keys)
-    
+
     @app.get("/conversations/<sender_id>/tracker")
     @requires_auth(app, auth_token)
     async def retrieve_tracker(request: Request, sender_id: Text):
@@ -902,6 +902,8 @@ def create_app(agent=None,
     return app
 
     @app.post("/conversations/resume-dead-conversations")
+    @requires_auth(app, auth_token)
+    @ensure_loaded_agent(app)
     async def trigger_resume_inactive_conv(request: Request):
         """ Get the last event timestamp from a list of ids
         and trigger an action if their last event was made more than a day ago
