@@ -901,12 +901,12 @@ def create_app(agent=None,
 
     return app
 
-    @app.route("/conversations/resume-dead-conversations", methods=['POST'])
+    @app.post("/conversations/resume-dead-conversations")
     @requires_auth(app, auth_token)
-    @ensure_loaded_agent(app)
     async def trigger_resume_inactive_conv(request: Request):
         """ Get the last event timestamp from a list of ids
         and trigger an action if their last event was made more than a day ago
+        or if force_update is called
 
         Returns
             responses: A jsonify dict of sender_ids on which the action trigger were call to
