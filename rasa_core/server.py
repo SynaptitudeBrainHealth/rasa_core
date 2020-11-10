@@ -965,9 +965,14 @@ def retrieve_keys(app):
         list -- tracker_store list of keys
     """
     keys = []
-    if app.agent.tracker_store:
-        keys = list(app.agent.tracker_store.keys())
-    return keys
+    if not app.agent.tracker_store:
+        raise ErrorResponse(503, "NoTrackerStore",
+                            "No tracker store available. Make sure to "
+                            "configure a tracker store when starting "
+                            "the server.")
+    else:
+        keys = app.agent.tracker_store.keys()
+    return list(keys) if keys else []
 
 def compare_utcdatetime_with_timegap(dt_a, dt_b, gap):
     """Check the timegap between two datetimes

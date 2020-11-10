@@ -151,9 +151,6 @@ class InMemoryTrackerStore(TrackerStore):
 
 
 class RedisTrackerStore(TrackerStore):
-    def keys(self):
-        pass
-
     def __init__(self, domain, host='localhost',
                  port=6379, db=0, password=None, event_broker=None,
                  record_exp=None):
@@ -173,7 +170,7 @@ class RedisTrackerStore(TrackerStore):
 
         serialised_tracker = self.serialise_tracker(tracker)
         self.red.set(tracker.sender_id, serialised_tracker, ex=timeout)
-    
+
     def delete(self, sender_id):
         self.red.delete(sender_id)
 
@@ -183,6 +180,10 @@ class RedisTrackerStore(TrackerStore):
             return self.deserialise_tracker(sender_id, stored)
         else:
             return None
+
+    def keys(self) -> Iterable[Text]:
+        """Returns keys of the Redis Tracker Store"""
+        return self.red.keys()
 
 
 class MongoTrackerStore(TrackerStore):
