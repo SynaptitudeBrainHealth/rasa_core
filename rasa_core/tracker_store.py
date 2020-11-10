@@ -3,7 +3,7 @@ import json
 import logging
 import pickle
 # noinspection PyPep8Naming
-from typing import Iterator, KeysView, List, Optional, Text
+from typing import Iterator, KeysView, List, Optional, Text, Iterable
 
 from rasa_core.actions.action import ACTION_LISTEN_NAME
 from rasa_core.broker import EventChannel
