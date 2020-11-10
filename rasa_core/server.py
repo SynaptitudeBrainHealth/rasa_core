@@ -596,6 +596,63 @@ def create_app(agent=None,
                                 "Evaluation could not be created. Error: {}"
                                 "".format(e))
 
+    @app.post("/conversations/resume-dead-conversations")
+    @requires_auth(app, auth_token)
+    @ensure_loaded_agent(app)
+    async def trigger_resume_inactive_conv(request: Request):
+        """ Get the last event timestamp from a list of ids
+        and trigger an action if their last event was made more than a day ago
+        or if force_update is called
+
+        Returns
+            responses: A jsonify dict of sender_ids on which the action trigger were call to
+        """
+        # retrieve parameters
+        request_params = request.json
+        action_to_execute = (request_params.get("name") or
+                             request_params.get("action"))
+        policy = request_params.get("policy", None)
+        confidence = request_params.get("confidence", None)
+        force_update = request_params.get("force_update", False)
+        verbosity = event_verbosity_parameter(request,
+                                              EventVerbosity.AFTER_RESTART if not force_update
+                                                                           else EventVerbosity.APPLIED)
+        # dict of responses that will store all the ids that were updated as keys
+        responses = {}
+        # Retrieve ids from tracker_store
+        ids = retrieve_keys(app)
+        current_time = datetime.datetime.utcnow()
+        # For each ids, trigger an action if it was stalled for more than a day 
+        for id in ids:
+            tracker = app.agent.tracker_store.get_or_create_tracker(id)
+            id_state = tracker.current_state(verbosity)
+            # check if the last event was made within the last 86400secs (24h)
+            last_event_ts_from_id = datetime.datetime.utcfromtimestamp(id_state["latest_event_time"])
+            seconds_in_a_day = 86400
+            if force_update or compare_utcdatetime_with_timegap(current_time, last_event_ts_from_id, seconds_in_a_day):
+                try:
+                    output_channel = _get_output_channel(request, tracker)
+                    logger.info('output_channel: {}'.format(output_channel))
+                    await app.agent.execute_action(id,
+                                                   action_to_execute,
+                                                   output_channel,
+                                                   policy,
+                                                   confidence)
+                    # add id to result
+                    responses[id] = "Action trigger sent"
+
+                except ValueError as e:
+                    raise ErrorResponse(400, "ValueError", e)
+                except Exception as e:
+                    logger.error("Encountered an exception while running action '{}'. "
+                                 "Bot will continue, but the actions events are lost. "
+                                 "Make sure to fix the exception in your custom "
+                                 "code.".format(action_to_execute))
+                    logger.debug(e, exc_info=True)
+                    raise ErrorResponse(500, "ValueError",
+                                        "Server failure. Error: {}".format(e))
+        return response.json(responses)
+
     @app.post("/jobs")
     @requires_auth(app, auth_token)
     async def train_stack(request: Request):
@@ -900,63 +957,6 @@ def create_app(agent=None,
         return response.json({"events": user_bot_events_final})
 
     return app
-
-    @app.post("/conversations/resume-dead-conversations")
-    @requires_auth(app, auth_token)
-    @ensure_loaded_agent(app)
-    async def trigger_resume_inactive_conv(request: Request):
-        """ Get the last event timestamp from a list of ids
-        and trigger an action if their last event was made more than a day ago
-        or if force_update is called
-
-        Returns
-            responses: A jsonify dict of sender_ids on which the action trigger were call to
-        """
-        # retrieve parameters
-        request_params = request.json
-        action_to_execute = (request_params.get("name") or
-                             request_params.get("action"))
-        policy = request_params.get("policy", None)
-        confidence = request_params.get("confidence", None)
-        force_update = request_params.get("force_update", False)
-        verbosity = event_verbosity_parameter(request,
-                                              EventVerbosity.AFTER_RESTART if not force_update
-                                                                           else EventVerbosity.APPLIED)
-        # dict of responses that will store all the ids that were updated as keys
-        responses = {}
-        # Retrieve ids from tracker_store
-        ids = retrieve_keys(app)
-        current_time = datetime.datetime.utcnow()
-        # For each ids, trigger an action if it was stalled for more than a day 
-        for id in ids:
-            tracker = app.agent.tracker_store.get_or_create_tracker(id)
-            id_state = tracker.current_state(verbosity)
-            # check if the last event was made within the last 86400secs (24h)
-            last_event_ts_from_id = datetime.datetime.utcfromtimestamp(id_state["latest_event_time"])
-            seconds_in_a_day = 86400
-            if force_update or compare_utcdatetime_with_gap(current_time, last_event_ts_from_id, seconds_in_a_day):
-                try:
-                    output_channel = _get_output_channel(request, tracker)
-                    logger.info('output_channel: {}'.format(output_channel))
-                    await app.agent.execute_action(id,
-                                                   action_to_execute,
-                                                   output_channel,
-                                                   policy,
-                                                   confidence)
-                    # add id to result
-                    responses[id] = "Action trigger sent"
-
-                except ValueError as e:
-                    raise ErrorResponse(400, "ValueError", e)
-                except Exception as e:
-                    logger.error("Encountered an exception while running action '{}'. "
-                                 "Bot will continue, but the actions events are lost. "
-                                 "Make sure to fix the exception in your custom "
-                                 "code.".format(action_to_execute))
-                    logger.debug(e, exc_info=True)
-                    raise ErrorResponse(500, "ValueError",
-                                        "Server failure. Error: {}".format(e))
-        return response.json(responses)
 
 def retrieve_keys(app):
     """ Retrieves the list of keys of the tracker store
