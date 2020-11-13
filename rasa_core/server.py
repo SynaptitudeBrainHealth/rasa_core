@@ -626,9 +626,13 @@ def create_app(agent=None,
         for id in ids:
             tracker = app.agent.tracker_store.get_or_create_tracker(id)
             id_state = tracker.current_state(verbosity)
+            logger.debug('Retrieve tracker state')
             tracker_dialogue = tracker.as_dialogue()
+            logger.debug('tracker as dialogue retrieved')
             new_tracker = app.agent.tracker_store.init_tracker(id)
+            logger.debug('reinitilisation of tracker done')
             new_tracker.recreate_from_dialogue(tracker_dialogue)
+            logger.debug('recreation of tracker from diag done')
             # tracker = app.agent.tracker_store.deserialise_tracker(id, app.agent.tracker_store.serialise_tracker(tracker))
             # check if the last event was made within the last 86400secs (24h)
             last_event_ts_from_id = datetime.datetime.utcfromtimestamp(id_state["latest_event_time"])
