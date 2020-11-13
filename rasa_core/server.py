@@ -509,7 +509,7 @@ def create_app(agent=None,
             logger.exception("Caught an exception while logging message.")
             raise ErrorResponse(500, "MessageException",
                                 "Server failure. Error: {}".format(e))
- 
+
     @app.route("/conversations/<sender_id>", methods=["DELETE"])
     @requires_auth(app, auth_token)
     async def delete_conversation(request: Request, sender_id: Text):
