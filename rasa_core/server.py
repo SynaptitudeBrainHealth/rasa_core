@@ -626,8 +626,7 @@ def create_app(agent=None,
         for id in ids:
             tracker = app.agent.tracker_store.get_or_create_tracker(id)
             id_state = tracker.current_state(verbosity)
-            app.agent.tracker_store.save(tracker)
-            app.agent.tracker_store.retrieve(id)
+            tracker = app.agent.tracker_store.deserialise_tracker(id, app.agent.tracker_store.serialise_tracker(tracker))
             # check if the last event was made within the last 86400secs (24h)
             last_event_ts_from_id = datetime.datetime.utcfromtimestamp(id_state["latest_event_time"])
             seconds_in_a_day = 86400
