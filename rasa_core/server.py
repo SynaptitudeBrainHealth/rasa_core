@@ -626,13 +626,16 @@ def create_app(agent=None,
         for id in ids:
             tracker = app.agent.tracker_store.get_or_create_tracker(id)
             id_state = tracker.current_state(verbosity)
-            tracker = app.agent.tracker_store.deserialise_tracker(id, app.agent.tracker_store.serialise_tracker(tracker))
+            tracker_dialogue = tracker.as_dialogue()
+            new_tracker = app.agent.tracker_store.init_tracker(id)
+            new_tracker.recreate_from_dialogue(tracker_dialogue)
+            # tracker = app.agent.tracker_store.deserialise_tracker(id, app.agent.tracker_store.serialise_tracker(tracker))
             # check if the last event was made within the last 86400secs (24h)
             last_event_ts_from_id = datetime.datetime.utcfromtimestamp(id_state["latest_event_time"])
             seconds_in_a_day = 86400
             if force_update or compare_utcdatetime_with_timegap(current_time, last_event_ts_from_id, seconds_in_a_day):
                 try:
-                    output_channel = _get_output_channel(request, tracker)
+                    output_channel = _get_output_channel(request, new_tracker)
                     logger.info('output_channel: {}'.format(output_channel))
                     await app.agent.execute_action(id,
                                                    action_to_execute,
