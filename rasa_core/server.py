@@ -596,53 +596,47 @@ def create_app(agent=None,
                                 "Evaluation could not be created. Error: {}"
                                 "".format(e))
 
-    @app.post("/trigger-action-w-condition")
+    @app.post("/conversations/handle-message-w-condition")
     @requires_auth(app, auth_token)
     @ensure_loaded_agent(app)
-    async def trigger_action_w_condition(request: Request):
-        """ Trigger an action for every user that would match the slot condition
+    async def handle_message_w_condition(request: Request):
+        """ Handle the message for every user that would match the slot condition
 
         Returns
             responses: A jsonify dict of sender_ids on which the action trigger were call to
         """
         # retrieve parameters
         request_params = request.json
-        action_to_execute = (request_params.get("name") or
-                             request_params.get("action"))
-        policy = request_params.get("policy", None)
-        confidence = request_params.get("confidence", None)
+        message_to_handle = (request_params.get("name") or
+                             request_params.get("message"))
         slot_name = request_params.get("slot_condition_name", "")
         slot_value = request_params.get("slot_value", None)
+        force_update = request_params.get("force_update", False)
         # dict of responses that will store all the ids that were updated as keys
         responses = {}
         # Retrieve ids from tracker_store
         ids = retrieve_keys(app)
-        # For each ids, trigger an action if it was stalled for more than a day 
         try:
+            # For each ids, handle the incoming message if it matches the condition
+            # or update is forced
             for id in ids:
                 tracker = app.agent.tracker_store.get_or_create_tracker(id)
                 tracker_slot_value = tracker.get_slot(slot_name)
-                if tracker_slot_value == slot_value:
+                if force_update or tracker_slot_value == slot_value:
                     output_channel = _get_output_channel(request, tracker)
                     logger.info('output_channel: {}'.format(output_channel))
-                    await app.agent.execute_action(id,
-                                                   action_to_execute,
-                                                   output_channel,
-                                                   policy,
-                                                   confidence)
+                    await app.agent.handle_text(message_to_handle,
+                                                output_channel=output_channel,
+                                                sender_id=id)
                     # add id to result
-                    responses[id] = "Action {} sent to id {}".format(action_to_execute,
-                                                                     id)
+                    responses[id] = "Message {} handle from id {}".format(message_to_handle,
+                                                                          id)
 
         except ValueError as e:
             raise ErrorResponse(400, "ValueError", e)
         except Exception as e:
-            logger.error("Encountered an exception while running action '{}'. "
-                         "Bot will continue, but the actions events are lost. "
-                         "Make sure to fix the exception in your custom "
-                         "code.".format(action_to_execute))
-            logger.debug(e, exc_info=True)
-            raise ErrorResponse(500, "ValueError",
+            logger.exception("Caught an exception during handle-message-w-condition.")
+            raise ErrorResponse(500, "ActionException",
                                 "Server failure. Error: {}".format(e))
         return response.json(responses)
 
