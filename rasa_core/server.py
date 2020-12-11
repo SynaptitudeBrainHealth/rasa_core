@@ -3,6 +3,7 @@ import os
 import tempfile
 import zipfile
 import datetime
+import re
 from functools import wraps, reduce
 from inspect import isawaitable
 from typing import Any, Callable, List, Optional, Text, Union
@@ -620,6 +621,7 @@ def create_app(agent=None,
             # For each ids, handle the incoming message if it matches the condition
             # or update is forced
             for id in ids:
+                sender_id_str = re.findall('\+[0-9]+', id.decode('utf-8'))[0]
                 tracker = app.agent.tracker_store.get_or_create_tracker(id)
                 tracker_slot_value = tracker.get_slot(slot_name)
                 if force_update or tracker_slot_value == slot_value:
@@ -627,10 +629,10 @@ def create_app(agent=None,
                     logger.info('output_channel: {}'.format(output_channel))
                     await app.agent.handle_text(message_to_handle,
                                                 output_channel=output_channel,
-                                                sender_id=id)
+                                                sender_id=sender_id_str)
                     # add id to result
                     responses[id] = "Message {} handle from id {}".format(message_to_handle,
-                                                                          id)
+                                                                          sender_id_str)
 
         except ValueError as e:
             raise ErrorResponse(400, "ValueError", e)
