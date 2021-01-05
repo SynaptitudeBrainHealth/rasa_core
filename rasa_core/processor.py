@@ -14,6 +14,7 @@ from rasa_core.actions.action import (
     ACTION_RESTART_NAME,
     ActionExecutionRejection)
 from rasa_core.channels import CollectingOutputChannel
+from rasa.core.channels.channel import OutputChannel
 from rasa_core.channels import UserMessage
 from rasa_core.dispatcher import Dispatcher
 from rasa_core.domain import Domain
@@ -205,6 +206,11 @@ class MessageProcessor(object):
             logger.debug("Canceled reminder because it is outdated. "
                          "(event: {} id: {})".format(reminder_event.action_name,
                                                      reminder_event.name))
+            logger.debug("Reasons: kill_on_user_message: {},
+                         "_has_message_after_reminder: {}",
+                         "_is_reminder_still_valid: {}".format(reminder_event.kill_on_user_message,
+                                                               self._has_message_after_reminder(tracker, reminder_event),
+                                                               self._is_reminder_still_valid(tracker, reminder_event)))
         else:
             # necessary for proper featurization, otherwise the previous
             # unrelated message would influence featurization
@@ -325,7 +331,9 @@ class MessageProcessor(object):
         return not is_listen_action
 
     async def _schedule_reminders(self, events: List[Event],
-                                  dispatcher: Dispatcher, tracker) -> None:
+                                  dispatcher: Dispatcher,
+                                  tracker: DialogueStateTracker,
+                                  output_channel: OutputChannel) -> None:
         """Uses the scheduler to time a job to trigger the passed reminder.
 
         Reminders with the same `id` property will overwrite one another
@@ -333,15 +341,17 @@ class MessageProcessor(object):
 
         if events is not None:
             for e in events:
-                if isinstance(e, ReminderScheduled):
+                if not isinstance(e, ReminderScheduled):
+                    continue
 
-                    (await jobs.scheduler()).add_job(
-                        self.handle_reminder, "date",
-                        run_date=e.trigger_date_time,
-                        args=[e, dispatcher],
-                        id=e.name,
-                        replace_existing=True,
-                        name=str(e.action_name) + "__sender_id:" + tracker.sender_id)
+                (await jobs.scheduler()).add_job(
+                    self.handle_reminder, "date",
+                    run_date=e.trigger_date_time,
+                    args=[e, tracker.sender_id, output_channel],
+                    id=e.name,
+                    replace_existing=True,
+                    name=str(e.action_name) + "__sender_id:" + tracker.sender_id,   
+                )
 
     async def _cancel_reminders(self, events: List[Event], tracker) -> None:
         # All Reminders with the same name will be cancelled
@@ -353,7 +363,6 @@ class MessageProcessor(object):
                     for j in scheduler.get_jobs():
                         if j.name == name_to_check:
                             scheduler.remove_job(j.id)
-
 
     async def _run_action(self, action, tracker, dispatcher, policy=None,
                           confidence=None):
@@ -376,12 +385,39 @@ class MessageProcessor(object):
 
         self._log_action_on_tracker(tracker, action.name(), events, policy,
                                     confidence)
-        self.log_bot_utterances_on_tracker(tracker, dispatcher)
+        if action.name() != "action_listen" and not action.name().startswith("utter_"):
+            self._log_slots(tracker)
 
-        await self._cancel_reminders(events, tracker)
-        await self._schedule_reminders(events, dispatcher, tracker)
+        await self.execute_side_effects(events, tracker, dispatcher.output_channel)
 
         return self.should_predict_another_action(action.name(), events)
+
+    async def execute_side_effects(
+        self,
+        events: List[Event],
+        tracker: DialogueStateTracker,
+        output_channel: OutputChannel,
+    ) -> None:
+        """Send bot messages, schedule and cancel reminders that are logged
+        in the events array."""
+
+        await self._send_bot_messages(events, tracker, output_channel)
+        await self._schedule_reminders(events, tracker, output_channel)
+        await self._cancel_reminders(events, tracker)
+
+    @staticmethod
+    async def _send_bot_messages(
+        events: List[Event],
+        tracker: DialogueStateTracker,
+        output_channel: OutputChannel,
+    ) -> None:
+        """Send all the bot messages that are logged in the events array."""
+
+        for e in events:
+            if not isinstance(e, BotUttered):
+                continue
+
+            await output_channel.send_response(tracker.sender_id, e.message())
 
     def _warn_about_new_slots(self, tracker, action_name, events):
         # these are the events from that action we have seen during training
@@ -436,7 +472,10 @@ class MessageProcessor(object):
 
         self._warn_about_new_slots(tracker, action_name, events)
 
-        if action_name is not None:
+        action_was_rejected_manually = any(
+            isinstance(event, ActionExecutionRejected) for event in events
+        )
+        if not action_was_rejected_manually:
             # log the action and its produced events
             tracker.update(ActionExecuted(action_name, policy, confidence))
 
