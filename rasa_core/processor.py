@@ -206,8 +206,8 @@ class MessageProcessor(object):
             logger.debug("Canceled reminder because it is outdated. "
                          "(event: {} id: {})".format(reminder_event.action_name,
                                                      reminder_event.name))
-            logger.debug("Reasons: kill_on_user_message: {},
-                         "_has_message_after_reminder: {}",
+            logger.debug("Reasons: kill_on_user_message: {}"
+                         "_has_message_after_reminder: {}"
                          "_is_reminder_still_valid: {}".format(reminder_event.kill_on_user_message,
                                                                self._has_message_after_reminder(tracker, reminder_event),
                                                                self._is_reminder_still_valid(tracker, reminder_event)))
