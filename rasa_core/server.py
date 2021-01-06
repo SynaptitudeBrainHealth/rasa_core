@@ -621,8 +621,10 @@ def create_app(agent=None,
             # For each ids, handle the incoming message if it matches the condition
             # or update is forced
             for id in ids:
+                logger.info('id: {}, format_id: {}'.format(id, type(id)))
                 sender_id_str = re.findall('\+[0-9]+', id.decode('utf-8'))[0]
-                tracker = app.agent.tracker_store.get_or_create_tracker(id)
+                logger.info('sender_id_str: {}, format_sender_id_str: {}'.format(sender_id_str, type(sender_id_str)))
+                tracker = app.agent.tracker_store.get_or_create_tracker(sender_id_str)
                 tracker_slot_value = tracker.get_slot(slot_name)
                 if force_update or tracker_slot_value == slot_value:
                     output_channel = _get_output_channel(request, tracker)
