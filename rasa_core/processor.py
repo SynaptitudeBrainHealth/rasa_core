@@ -331,8 +331,8 @@ class MessageProcessor(object):
         return not is_listen_action
 
     async def _schedule_reminders(self, events: List[Event],
-                                  tracker: DialogueStateTracker,
-                                  output_channel: OutputChannel) -> None:
+                                  dispatcher: Dispatcher,
+                                  tracker: DialogueStateTracker) -> None:
         """Uses the scheduler to time a job to trigger the passed reminder.
 
         Reminders with the same `id` property will overwrite one another
@@ -346,7 +346,7 @@ class MessageProcessor(object):
                 (await jobs.scheduler()).add_job(
                     self.handle_reminder, "date",
                     run_date=e.trigger_date_time,
-                    args=[e, tracker.sender_id, output_channel],
+                    args=[e, dispatcher],
                     id=e.name,
                     replace_existing=True,
                     name=str(e.action_name) + "__sender_id:" + tracker.sender_id,   
@@ -387,21 +387,21 @@ class MessageProcessor(object):
         if action.name() != "action_listen" and not action.name().startswith("utter_"):
             self._log_slots(tracker)
 
-        await self.execute_side_effects(events, tracker, dispatcher.output_channel)
+        await self.execute_side_effects(events, dispatcher, tracker)
 
         return self.should_predict_another_action(action.name(), events)
 
     async def execute_side_effects(
         self,
+        dispatcher: Dispatcher,
         events: List[Event],
         tracker: DialogueStateTracker,
-        output_channel: OutputChannel,
     ) -> None:
         """Send bot messages, schedule and cancel reminders that are logged
         in the events array."""
 
-        await self._send_bot_messages(events, tracker, output_channel)
-        await self._schedule_reminders(events, tracker, output_channel)
+        await self._send_bot_messages(events, tracker, dispatcher.output_channel)
+        await self._schedule_reminders(events, dispatcher, tracker)
         await self._cancel_reminders(events, tracker)
 
     @staticmethod
