@@ -14,7 +14,7 @@ from rasa_core.actions.action import (
     ACTION_RESTART_NAME,
     ActionExecutionRejection)
 from rasa_core.channels import CollectingOutputChannel
-from rasa.core.channels.channel import OutputChannel
+from rasa_core.channels.channel import OutputChannel
 from rasa_core.channels import UserMessage
 from rasa_core.dispatcher import Dispatcher
 from rasa_core.domain import Domain
