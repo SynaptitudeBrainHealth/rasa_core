@@ -599,7 +599,6 @@ def create_app(agent=None,
 
     @app.post("/conversations/handle-message-w-condition")
     @requires_auth(app, auth_token)
-    @ensure_loaded_agent(app)
     async def handle_message_w_condition(request: Request):
         """ Handle the message for every user that would match the slot condition
 
