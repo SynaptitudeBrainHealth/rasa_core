@@ -331,7 +331,6 @@ class MessageProcessor(object):
         return not is_listen_action
 
     async def _schedule_reminders(self, events: List[Event],
-                                  dispatcher: Dispatcher,
                                   tracker: DialogueStateTracker,
                                   output_channel: OutputChannel) -> None:
         """Uses the scheduler to time a job to trigger the passed reminder.
