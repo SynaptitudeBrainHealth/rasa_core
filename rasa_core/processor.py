@@ -393,8 +393,8 @@ class MessageProcessor(object):
 
     async def execute_side_effects(
         self,
-        dispatcher: Dispatcher,
         events: List[Event],
+        dispatcher: Dispatcher,
         tracker: DialogueStateTracker,
     ) -> None:
         """Send bot messages, schedule and cancel reminders that are logged
