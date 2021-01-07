@@ -370,6 +370,7 @@ class MessageProcessor(object):
         try:
             events = await action.run(dispatcher, tracker, self.domain)
         except ActionExecutionRejection:
+            logger.info('In _run_action, catch ActionExecutionRejection')
             events = [ActionExecutionRejected(action.name(),
                                               policy, confidence)]
             tracker.update(events[0])
@@ -400,9 +401,10 @@ class MessageProcessor(object):
         """Send bot messages, schedule and cancel reminders that are logged
         in the events array."""
 
+        logger.info('In execute_side_effects')
         await self._send_bot_messages(events, tracker, dispatcher.output_channel)
-        await self._schedule_reminders(events, dispatcher, tracker)
         await self._cancel_reminders(events, tracker)
+        await self._schedule_reminders(events, dispatcher, tracker)
 
     @staticmethod
     async def _send_bot_messages(
@@ -471,10 +473,7 @@ class MessageProcessor(object):
 
         self._warn_about_new_slots(tracker, action_name, events)
 
-        action_was_rejected_manually = any(
-            isinstance(event, ActionExecutionRejected) for event in events
-        )
-        if not action_was_rejected_manually:
+        if action_name is not None:
             # log the action and its produced events
             tracker.update(ActionExecuted(action_name, policy, confidence))
 
